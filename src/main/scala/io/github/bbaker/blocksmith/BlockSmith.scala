@@ -51,13 +51,13 @@ object BlockSmith {
     }
   }
 
+
   try {
-    try {
-      LOGGER.addHandler(new FileHandler("errors.log", true))
-    }
-    catch {
-      case ioe: IOException =>
-        LOGGER.log(Level.WARNING, ioe.toString, ioe)
-    }
+    LOGGER.addHandler(new FileHandler("errors.log", true))
   }
+  catch {
+    case ioe: IOException =>
+      LOGGER.log(Level.WARNING, ioe.toString, ioe)
+  }
+
 }

@@ -21,8 +21,6 @@ import scala.util.control.Breaks._
   * @param listener the object to receive state change events (usually the renderer)
   */
 final class GameState (var listener: GameStateListener) {
-  chunk = new Chunk
-  listener.gameStateChunkChanged(chunk)
   /**
     * The one and only Player.
     */
@@ -30,7 +28,7 @@ final class GameState (var listener: GameStateListener) {
   /**
     * The one and only Chunk... so far.
     */
-  private var chunk: Chunk = null
+  private val chunk: Chunk = new Chunk
   /**
     * The currently selected block.
     */
@@ -46,6 +44,9 @@ final class GameState (var listener: GameStateListener) {
     * can be placed.
     */
   private val ARM_LENGTH: Float = 6
+
+  listener.gameStateChunkChanged(chunk)
+
 
   /**
     * Updates the GameState, responding to user input through {@code GameStateInputData}.
@@ -113,21 +114,21 @@ final class GameState (var listener: GameStateListener) {
           val distSquared: Float = ray.minus(position).magnitudeSquared
           if (distSquared > ARM_LENGTH * ARM_LENGTH) break //todo: remove break
           if (sight.z > 0) {
-            if (chunk.getBlockType(new Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-              selectedBlock = new Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+            if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
+              selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
               if (selectedBlock.z - 1 >= 0) {
-                newBlock = new Block(selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
+                newBlock = Block(selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
                 if (chunk.getBlockType(newBlock) != 0) newBlock = null
               }
               frontBackDistSquared = distSquared
-              break //todo: remove brea
+              break //todo: remove break
             }
           }
           else {
-            if (ray.z - 1 >= 0 && chunk.getBlockType(new Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int] - 1)) != 0) {
-              selectedBlock = new Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int] - 1)
+            if (ray.z - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int] - 1)) != 0) {
+              selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int] - 1)
               if (selectedBlock.z + 1 < 16) {
-                newBlock = new Block(selectedBlock.x, selectedBlock.y, selectedBlock.z + 1)
+                newBlock = Block(selectedBlock.x, selectedBlock.y, selectedBlock.z + 1)
                 if (chunk.getBlockType(newBlock) != 0) newBlock = null
               }
               frontBackDistSquared = distSquared
@@ -150,10 +151,10 @@ final class GameState (var listener: GameStateListener) {
           val distSquared: Float = ray.minus(position).magnitudeSquared
           if (distSquared > ARM_LENGTH * ARM_LENGTH || distSquared > frontBackDistSquared) //break //todo: break is not supported
             if (sight.x > 0) {
-              if (chunk.getBlockType(new Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-                selectedBlock = new Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+              if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
+                selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
                 if (selectedBlock.x - 1 >= 0) {
-                  newBlock = new Block(selectedBlock.x - 1, selectedBlock.y, selectedBlock.z)
+                  newBlock = Block(selectedBlock.x - 1, selectedBlock.y, selectedBlock.z)
                   if (chunk.getBlockType(newBlock) != 0) newBlock = null
                 }
                 leftRightDistSquared = distSquared
@@ -161,10 +162,10 @@ final class GameState (var listener: GameStateListener) {
               }
             }
             else {
-              if (ray.x - 1 >= 0 && chunk.getBlockType(new Block(ray.x.asInstanceOf[Int] - 1, ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-                selectedBlock = new Block(ray.x.asInstanceOf[Int] - 1, ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+              if (ray.x - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int] - 1, ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
+                selectedBlock = Block(ray.x.asInstanceOf[Int] - 1, ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
                 if (selectedBlock.x + 1 < 16) {
-                  newBlock = new Block(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
+                  newBlock = Block(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
                   if (chunk.getBlockType(newBlock) != 0) newBlock = null
                 }
                 leftRightDistSquared = distSquared
@@ -191,10 +192,10 @@ final class GameState (var listener: GameStateListener) {
             distSquared > leftRightDistSquared
           ) break //todo: remove break
             if (sight.y > 0) {
-              if (chunk.getBlockType(new Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-                selectedBlock = new Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+              if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
+                selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
                 if (selectedBlock.y - 1 >= 0) {
-                  newBlock = new Block(selectedBlock.x, selectedBlock.y - 1, selectedBlock.z)
+                  newBlock = Block(selectedBlock.x, selectedBlock.y - 1, selectedBlock.z)
                   if (chunk.getBlockType(newBlock) != 0) newBlock = null
                 }
                 bottomTopDistSquared = distSquared
@@ -202,10 +203,10 @@ final class GameState (var listener: GameStateListener) {
               }
             }
             else {
-              if (ray.y - 1 >= 0 && chunk.getBlockType(new Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])) != 0) {
-                selectedBlock = new Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])
+              if (ray.y - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])) != 0) {
+                selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])
                 if (selectedBlock.y + 1 < 16) {
-                  newBlock = new Block(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
+                  newBlock = Block(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
                   if (chunk.getBlockType(newBlock) != 0) newBlock = null
                 }
                 bottomTopDistSquared = distSquared

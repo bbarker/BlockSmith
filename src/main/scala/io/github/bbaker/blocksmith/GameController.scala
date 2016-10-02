@@ -7,6 +7,7 @@ import org.lwjgl.opengl.Display
 import org.lwjgl.{LWJGLException, Sys}
 
 
+
 /**
   * GameController is the controller in the Model-View-Controller (MVC) design
   * architecture for this application. GameController handles user input and mediates
@@ -18,30 +19,6 @@ import org.lwjgl.{LWJGLException, Sys}
   * @see GameState
   * @see GameRenderer
   */
-object GameController {
-
-  /**
-    * A tiny enum for identifying mouse buttons.
-    *
-    * @author Mitchell Kember
-    * @since 10/12/2011
-    */
-  sealed trait MouseButton {val ordinal: Int}
-  case object Left extends MouseButton() {val ordinal: Int = 0}
-  case object Right extends MouseButton() {val ordinal: Int = 1}
-
-
-  //  class MouseButton extends Enumeration {
-//    type MouseButton = Value
-//    val LEFT, RIGHT = Value
-//  }
-
-
-  /**
-    * The maximum amount of time to simulate over a single frame, in milliseconds.
-    */
-  private val MAX_DELTA_TIME: Float = 50.0f
-}
 
 import io.github.bbaker.blocksmith.GameController._
 
@@ -53,23 +30,17 @@ import io.github.bbaker.blocksmith.GameController._
   */
 @throws[LWJGLException]
 final class GameController () {
-  renderer = new GameRenderer
-  state = new GameState (renderer)
-  Keyboard.create ()
-  // This will make the mouse invisible. It will be "grabbed" by the
-  // window, making it invisible and unable to leave the window.
-  Mouse.setGrabbed (true)
-  Mouse.create ()
+
 
   /**
     * The renderer for this GameController's state.
     */
-  private var renderer: GameRenderer = null
+  private val renderer: GameRenderer = new GameRenderer
 
   /**
     * The heart of the game, the GameState.
     */
-  private var state: GameState = null
+  private val state: GameState = new GameState (renderer)
 
   /**
     * Used for detecting space bar presses.
@@ -91,15 +62,22 @@ final class GameController () {
     */
   private var previousTime: Double = 0.0
 
+
+  Keyboard.create ()
+  // This will make the mouse invisible. It will be "grabbed" by the
+  // window, making it invisible and unable to leave the window.
+  Mouse.setGrabbed (true)
+  Mouse.create ()
+
   /**
     * Clean up LWJGL components.
     */
   def destroy () {
-  // Methods already check if created before destroying.
-  Mouse.destroy ()
-  Keyboard.destroy ()
-  Display.destroy ()
-}
+    // Methods already check if created before destroying.
+    Mouse.destroy ()
+    Keyboard.destroy ()
+    Display.destroy ()
+  }
 
   /**
     * Gets the time in milliseconds since this method was last called. If it
@@ -196,4 +174,30 @@ final class GameController () {
     }
   }
 
+}
+
+
+object GameController {
+
+  /**
+    * A tiny enum for identifying mouse buttons.
+    *
+    * @author Mitchell Kember
+    * @since 10/12/2011
+    */
+  sealed trait MouseButton {val ordinal: Int}
+  case object Left extends MouseButton() {val ordinal: Int = 0}
+  case object Right extends MouseButton() {val ordinal: Int = 1}
+
+
+  //  class MouseButton extends Enumeration {
+  //    type MouseButton = Value
+  //    val LEFT, RIGHT = Value
+  //  }
+
+
+  /**
+    * The maximum amount of time to simulate over a single frame, in milliseconds.
+    */
+  private val MAX_DELTA_TIME: Float = 50.0f
 }

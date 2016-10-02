@@ -1,4 +1,4 @@
-# Mycraft
+# BlockSmith
 
 BlockSmith is a simple [Minecraft](https://minecraft.net) clone written in Scala, using [LWJGL](https://www.lwjgl.org). It is based on [Mitchell Kember](https://github.com/mk12)'s [Mycraft](https://github.com/bbarker/mycraft).
 
