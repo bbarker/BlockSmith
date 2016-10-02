@@ -32,24 +32,6 @@ import io.github.bbaker.blocksmith.GameRenderer._
   * @throws LWJGLException if there is an error setting up the window
   */
 final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
-  Display.setDisplayMode (new DisplayMode (DISPLAY_WIDTH, DISPLAY_HEIGHT) )
-  Display.setFullscreen (false)
-  Display.setTitle (WINDOW_TITLE)
-  // Try using oversampling for smooth edges.
-  try {
-    Display.create (new PixelFormat (0, DEPTH_BUFFER_BITS, 0, DESIRED_SAMPLES) )
-  }
-  catch {
-    case lwjgle: LWJGLException =>
-      // Replace this with text on screen
-      println("Could not enable anti-aliasing. Brace yourself for jaggies.")
-      Display.create (new PixelFormat (0, DEPTH_BUFFER_BITS, 0, 0) )
-  }
-  // Get ready
-  prepareOpenGL()
-  resizeOpenGL()
-  initializeData()
-  loadTextures()
 
   /**
     * The furthest away from this Camera that objects will be rendered.
@@ -71,37 +53,58 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     */
   private var numVerts: Int = 0
 
+
+  Display.setDisplayMode (new DisplayMode (DISPLAY_WIDTH, DISPLAY_HEIGHT) )
+  Display.setFullscreen (false)
+  Display.setTitle (WINDOW_TITLE)
+  // Try using oversampling for smooth edges.
+  try {
+    Display.create (new PixelFormat (0, DEPTH_BUFFER_BITS, 0, DESIRED_SAMPLES) )
+  }
+  catch {
+    case lwjgle: LWJGLException =>
+      // Replace this with text on screen
+      println("Could not enable anti-aliasing. Brace yourself for jaggies.")
+      Display.create (new PixelFormat (0, DEPTH_BUFFER_BITS, 0, 0) )
+  }
+
+  // Get ready
+  prepareOpenGL()
+  resizeOpenGL()
+  initializeData()
+  loadTextures()
+
   /**
     * Enables and Disables various OpenGL states. This should be called once when
     * the GameRenderer is created, before any rendering.
     */
   private def prepareOpenGL () {
-  glEnable (GL_CULL_FACE) // back face culling
-  glEnable (GL_DEPTH_TEST) // z-buffer
-  glEnable (GL_TEXTURE_2D) // textures
-  // We don't need these
-  glDisable (GL_ALPHA_TEST)
-  glDisable (GL_STENCIL_TEST)
-  glDisable (GL_DITHER)
-  glDisable (GL_LIGHTING)
-  // Cross hair and selected block hilighting
-  glLineWidth (2.0f)
-  glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
-  // Background colour
-  glClearColor (0.8f, 0.9f, 1.0f, 0.0f)
-}
+    glEnable (GL_CULL_FACE) // back face culling
+    glEnable (GL_DEPTH_TEST) // z-buffer
+    glEnable (GL_TEXTURE_2D) // textures
+    // We don't need these
+    glDisable (GL_ALPHA_TEST)
+    glDisable (GL_STENCIL_TEST)
+    glDisable (GL_DITHER)
+    glDisable (GL_LIGHTING)
+    // Cross hair and selected block hilighting
+    glLineWidth (2.0f)
+    glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
+    // Background colour
+    glClearColor (0.8f, 0.9f, 1.0f, 0.0f)
+  }
 
   /**
     * Resizes the OpenGL viewport and recalculates the projection matrix.
     */
   private def resizeOpenGL () {
-  glViewport (0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
-  glMatrixMode (GL_PROJECTION)
-  glLoadIdentity ()
-  gluPerspective (45, DISPLAY_WIDTH.toFloat / DISPLAY_HEIGHT.toFloat, 0.25f, renderDistance)
-  glMatrixMode (GL_MODELVIEW)
-  glLoadIdentity ()
-}
+    glViewport (0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
+    glMatrixMode (GL_PROJECTION)
+    glLoadIdentity ()
+    gluPerspective (45, DISPLAY_WIDTH.toFloat / DISPLAY_HEIGHT.toFloat, 0.25f, renderDistance)
+    glMatrixMode (GL_MODELVIEW)
+    glLoadIdentity ()
+  }
 
   /**
     * Renders a GameState.
@@ -109,56 +112,56 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     * @param state the GameState to render
     */
   def render (state: GameState) {
-  // Clear colour and z buffers
-  glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-  // Load the identity matrix
-  glLoadIdentity ()
-  // Let the Camera calculate the view matrix
-  state.getPlayerView.updateMatrix ()
-  // Full brightness for textures
-  glColor3b(127.toByte, 127.toByte, 127.toByte)
-  // Start at 1 to avoid drawing 1st degenerate vertex and messing everything else up
-  glDrawArrays (GL_TRIANGLE_STRIP, 1, numVerts)
-  // Black lines
-  glColor3b((-127).toByte, (-127).toByte, (-127).toByte)
-  // Draw selected block outline hilight
-  if (state.isBlockSelected) {
-  val selectedBlock: Vector = GameRenderer.openGLCoordinatesForBlock (state.getSelectedBlock)
-  // Just use immediate mode/fixed function pipeline
-  glBegin (GL_LINE_STRIP)
-  glVertex3f (selectedBlock.x, selectedBlock.y, selectedBlock.z)
-  glVertex3f (selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
-  glVertex3f (selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z)
-  glVertex3f (selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
-  glVertex3f (selectedBlock.x, selectedBlock.y, selectedBlock.z)
-  glVertex3f (selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
-  glVertex3f (selectedBlock.x + 1, selectedBlock.y, selectedBlock.z - 1)
-  glVertex3f (selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z - 1)
-  glVertex3f (selectedBlock.x, selectedBlock.y + 1, selectedBlock.z - 1)
-  glVertex3f (selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
-  glEnd ()
-  glBegin (GL_LINES)
-  glVertex3f (selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
-  glVertex3f (selectedBlock.x, selectedBlock.y + 1, selectedBlock.z - 1)
-  glVertex3f (selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z)
-  glVertex3f (selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z - 1)
-  glVertex3f (selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
-  glVertex3f (selectedBlock.x + 1, selectedBlock.y, selectedBlock.z - 1)
-  glEnd ()
-}
-  // Reload identity matrix
-  glLoadIdentity ()
-  // Draw crosshair
-  glBegin (GL_LINES)
-  glVertex3f (- CROSSHAIR_SIZE / 2, 0, - 0.25f)
-  glVertex3f (CROSSHAIR_SIZE / 2, 0, - 0.25f)
-  glVertex3f (0, - CROSSHAIR_SIZE / 2, - 0.25f)
-  glVertex3f (0, CROSSHAIR_SIZE / 2, - 0.25f)
-  glEnd ()
-  // Update
-  Display.update ()
-  Display.sync (60)
-}
+    // Clear colour and z buffers
+    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    // Load the identity matrix
+    glLoadIdentity ()
+    // Let the Camera calculate the view matrix
+    state.getPlayerView.updateMatrix ()
+    // Full brightness for textures
+    glColor3b(127.toByte, 127.toByte, 127.toByte)
+    // Start at 1 to avoid drawing 1st degenerate vertex and messing everything else up
+    glDrawArrays (GL_TRIANGLE_STRIP, 1, numVerts)
+    // Black lines
+    glColor3b((-127).toByte, (-127).toByte, (-127).toByte)
+    // Draw selected block outline hilight
+    if (state.isBlockSelected) {
+      val selectedBlock: Vector = GameRenderer.openGLCoordinatesForBlock (state.getSelectedBlock)
+      // Just use immediate mode/fixed function pipeline
+      glBegin (GL_LINE_STRIP)
+      glVertex3f (selectedBlock.x, selectedBlock.y, selectedBlock.z)
+      glVertex3f (selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
+      glVertex3f (selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z)
+      glVertex3f (selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
+      glVertex3f (selectedBlock.x, selectedBlock.y, selectedBlock.z)
+      glVertex3f (selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
+      glVertex3f (selectedBlock.x + 1, selectedBlock.y, selectedBlock.z - 1)
+      glVertex3f (selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z - 1)
+      glVertex3f (selectedBlock.x, selectedBlock.y + 1, selectedBlock.z - 1)
+      glVertex3f (selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
+      glEnd ()
+      glBegin (GL_LINES)
+      glVertex3f (selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
+      glVertex3f (selectedBlock.x, selectedBlock.y + 1, selectedBlock.z - 1)
+      glVertex3f (selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z)
+      glVertex3f (selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z - 1)
+      glVertex3f (selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
+      glVertex3f (selectedBlock.x + 1, selectedBlock.y, selectedBlock.z - 1)
+      glEnd ()
+    }
+    // Reload identity matrix
+    glLoadIdentity ()
+    // Draw crosshair
+    glBegin (GL_LINES)
+    glVertex3f (- CROSSHAIR_SIZE / 2, 0, - 0.25f)
+    glVertex3f (CROSSHAIR_SIZE / 2, 0, - 0.25f)
+    glVertex3f (0, - CROSSHAIR_SIZE / 2, - 0.25f)
+    glVertex3f (0, CROSSHAIR_SIZE / 2, - 0.25f)
+    glEnd ()
+    // Update
+    Display.update ()
+    Display.sync (60)
+  }
 
   /**
     * Loads textures that will be used by this GameRenderer.
