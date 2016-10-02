@@ -46,7 +46,7 @@ class Player {
   /**
     * The vertical velocity of this Player, used for jumping and falling.
     */
-  private var velocity: Float = 0
+  var velocity: Float = 0
   camera.setPositionY(height + CAMERA_HEIGHT)
   /**
     * Used for collision detection, to determine which direction this Player is moving.

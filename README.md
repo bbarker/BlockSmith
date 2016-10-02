@@ -16,4 +16,6 @@ You can build and run simply using [SBT](http://www.scala-sbt.org/) by doing `sb
 Original work © 2012 Mitchell Kember
 Modified work © 2016 Brandon Barker
 
-Mycraft is available under the MIT License; see [LICENSE](LICENSE-Original.md) for details.
+BlockSmith is available under the MPL 2.0 License; see [LICENSE](LICENSE.md) for details.
+
+BlockSmith v0.0.1 and earlier is also available under the MIT License; see [LICENSE](LICENSE-Original.md) for details.
