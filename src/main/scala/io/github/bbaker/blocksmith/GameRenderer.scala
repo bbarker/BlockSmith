@@ -23,27 +23,6 @@ import org.newdawn.slick.util.ResourceLoader
   * @author Mitchell Kember
   * @since 07/12/2011
   */
-object GameRenderer {
-  private val DISPLAY_WIDTH: Int = 800
-  private val DISPLAY_HEIGHT: Int = 600
-  private val DEPTH_BUFFER_BITS: Int = 24
-  private val DESIRED_SAMPLES: Int = 8
-  private val WINDOW_TITLE: String = "BlockSmith"
-  /**
-    * The width and height of the cross hairs in the middle of the screen.
-    */
-  private val CROSSHAIR_SIZE: Float = 0.025f
-
-  /**
-    * Gets the vertices to use for rendering a block (inverts the z axis).
-    *
-    * @param block the block's location
-    * @return its rendering coordinates
-    */
-  def openGLCoordinatesForBlock(block: Block): Vector =
-    Vector(block.x, block.y, -block.z)
-
-}
 
 import io.github.bbaker.blocksmith.GameRenderer._
 
@@ -185,21 +164,22 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     * Loads textures that will be used by this GameRenderer.
     */
   private def loadTextures () {
-  try {
-    dirtTexture = TextureLoader.getTexture ("PNG", ResourceLoader.getResourceAsStream ("res/dirt.png") )
+    try {
+      dirtTexture = TextureLoader.getTexture ("PNG", ResourceLoader.getResourceAsStream ("res/dirt.png") )
+    }
+    catch {
+      case ioe: IOException =>
+      BlockSmith.LOGGER.log (Level.WARNING, ioe.toString, ioe)
+    }
+    // Texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    // Minecraft! (try using GL_LINEAR and you'll see what I mean):
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+    // It will stay bound
+    dirtTexture.bind()
   }
-  catch {
-    case ioe: IOException =>
-    BlockSmith.LOGGER.log (Level.WARNING, ioe.toString, ioe)
-  }
-  // Texture parameters
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST) // Minecraft! (try using GL_LINEAR and you'll see what I mean)
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-  // It will stay bound
-  dirtTexture.bind()
-}
 
   /**
     * Creates the VBO that this GameRenderer will use.
@@ -207,26 +187,26 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     * @throws LWJGLException if VBOs are not supported
     */
   @throws[LWJGLException]
-  private def initializeData () {
-  if (! GLContext.getCapabilities.GL_ARB_vertex_buffer_object) {
-  BlockSmith.LOGGER.log (Level.SEVERE, "GL_ARB_vertex_buffer_object not supported.")
-  throw new LWJGLException ("GL_ARB_vertex_buffer_object not supported")
-}
-  // Create it
-  bufferObjectID = ARBBufferObject.glGenBuffersARB
-  // Vertex Data interleaved format: XYZST
-  val position: Int = 3
-  val texcoords: Int = 2
-  val sizeOfInt: Int = 4 // 4 bytes in an int
-  val vertexDataSize: Int = (position + texcoords) * sizeOfInt
-  // Bind it
-    ARBBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, bufferObjectID)
-  // Vertex and texture pointers
-  glVertexPointer (3, GL_INT, vertexDataSize, 0)
-  glTexCoordPointer (2, GL_INT, vertexDataSize, position * sizeOfInt)
-  glEnableClientState (GL_VERTEX_ARRAY)
-  glEnableClientState (GL_TEXTURE_COORD_ARRAY)
-}
+  private def initializeData () = {
+    if (! GLContext.getCapabilities.GL_ARB_vertex_buffer_object) {
+      BlockSmith.LOGGER.log (Level.SEVERE, "GL_ARB_vertex_buffer_object not supported.")
+      throw new LWJGLException ("GL_ARB_vertex_buffer_object not supported")
+    }
+    // Create it
+    bufferObjectID = ARBBufferObject.glGenBuffersARB
+    // Vertex Data interleaved format: XYZST
+    val position: Int = 3
+    val texcoords: Int = 2
+    val sizeOfInt: Int = 4 // 4 bytes in an int
+    val vertexDataSize: Int = (position + texcoords) * sizeOfInt
+    // Bind it
+      ARBBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, bufferObjectID)
+    // Vertex and texture pointers
+    glVertexPointer (3, GL_INT, vertexDataSize, 0)
+    glTexCoordPointer (2, GL_INT, vertexDataSize, position * sizeOfInt)
+    glEnableClientState (GL_VERTEX_ARRAY)
+    glEnableClientState (GL_TEXTURE_COORD_ARRAY)
+  }
 
   /**
     * Calculates vertices for a cube located at ({@code x}, {@code y}, {@code z}).
@@ -288,12 +268,12 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
 
     def putCubeData(bufSize: Int): IntBuffer = {
       val vertexData: IntBuffer = BufferUtils.createIntBuffer(bufSize)
-      for{
+      for {
         xx <- 0 until 16
         yy <- 0 until 16
         zz <- 0 until -16 by -1
       } yield {
-        if (data(xx)(yy)(-zz) !=0) {
+        if (data(xx)(yy)(-zz) !=0 ) {
           vertexData.put(cubeData(xx, yy, zz))
         }
       }
@@ -322,4 +302,25 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
       ARBBufferObject.GL_DYNAMIC_DRAW_ARB
     )
   }
+}
+
+object GameRenderer {
+  private val DISPLAY_WIDTH: Int = 800
+  private val DISPLAY_HEIGHT: Int = 600
+  private val DEPTH_BUFFER_BITS: Int = 24
+  private val DESIRED_SAMPLES: Int = 8
+  private val WINDOW_TITLE: String = "BlockSmith"
+  /**
+    * The width and height of the cross hairs in the middle of the screen.
+    */
+  private val CROSSHAIR_SIZE: Float = 0.025f
+
+  /**
+    * Gets the vertices to use for rendering a block (inverts the z axis).
+    *
+    * @param block the block's location
+    * @return its rendering coordinates
+    */
+  def openGLCoordinatesForBlock(block: Block): Vector =
+  Vector(block.x, block.y, -block.z)
 }

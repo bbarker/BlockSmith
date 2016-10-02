@@ -3,7 +3,7 @@
 package io.github.bbaker.blocksmith
 
 /**
-  * Chunk represents a chunk of 16 by 16 by 16 blocks in the Mycraft world.
+  * Chunk represents a chunk of 16 by 16 by 16 blocks in the BlockSmith world.
   * Each block uses one byte to represent its type, totaling 4 kilobytes to
   * store the information for one Chunk.
   *
@@ -31,10 +31,10 @@ final class Chunk {
     * Set a block's type.
     *
     * @param block the location of the block
-    * @param type  its new type id
+    * @param blockType  its new type id
     */
-  def setBlockType(block: Block, `type`: Byte) =
-    data(block.x)(block.y)(block.z) = `type`
+  def setBlockType(block: Block, blockType: Byte) =
+    data(block.x)(block.y)(block.z) = blockType
 
   /**
     * Get a block's type.
@@ -43,5 +43,13 @@ final class Chunk {
     * @return its type id
     */
   def getBlockType(block: Block): Byte = data(block.x)(block.y)(block.z)
+
+  // Place a ground layer of blocks
+  for {
+    xx <- 0 until 16
+    zz <- 0 until 16
+  } yield {
+    data(xx)(0)(zz) = 1
+  }
 
 }
