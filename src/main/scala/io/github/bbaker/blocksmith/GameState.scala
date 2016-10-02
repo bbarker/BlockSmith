@@ -61,7 +61,6 @@ final class GameState (var listener: GameStateListener) {
     // by this to match the real framerate.
     val multiplier: Float = deltaTime / (100.0f / 6.0f)
     // Player movement
-    //println(player.velocity) // FIXME, DEBUG: this shows we are moving but can't see blocks
     player.move(input, multiplier)
     player.collision(chunk)
     if (input.jump) player.jump()

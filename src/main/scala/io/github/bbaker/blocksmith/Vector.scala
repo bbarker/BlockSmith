@@ -14,6 +14,8 @@ package io.github.bbaker.blocksmith
 object Vector {
 
   def apply() = new Vector()
+  def apply(xx: Float, yy: Float, zz: Float) = new Vector(xx, yy, zz)
+
 
   /**
     * Calculates the cross product of {@code u} and {@code v} and returns

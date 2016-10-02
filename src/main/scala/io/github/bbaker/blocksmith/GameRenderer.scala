@@ -28,7 +28,7 @@ object GameRenderer {
   private val DISPLAY_HEIGHT: Int = 600
   private val DEPTH_BUFFER_BITS: Int = 24
   private val DESIRED_SAMPLES: Int = 8
-  private val WINDOW_TITLE: String = "Mycraft"
+  private val WINDOW_TITLE: String = "BlockSmith"
   /**
     * The width and height of the cross hairs in the middle of the screen.
     */
@@ -40,40 +40,37 @@ object GameRenderer {
     * @param block the block's location
     * @return its rendering coordinates
     */
-  def openGLCoordinatesForBlock(block: Block): Vector = {
-    return new Vector(block.x, block.y, -block.z)
-  }
+  def openGLCoordinatesForBlock(block: Block): Vector =
+    Vector(block.x, block.y, -block.z)
+
 }
 
 import io.github.bbaker.blocksmith.GameRenderer._
-
-final class GameRenderer @throws[LWJGLException] ()
 
 /**
   * Creates a new GameRenderer and sets up the LWJGL window.
   *
   * @throws LWJGLException if there is an error setting up the window
   */
-extends GameStateListener {
+final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
   Display.setDisplayMode (new DisplayMode (DISPLAY_WIDTH, DISPLAY_HEIGHT) )
   Display.setFullscreen (false)
   Display.setTitle (WINDOW_TITLE)
   // Try using oversampling for smooth edges.
   try {
-  Display.create (new PixelFormat (0, DEPTH_BUFFER_BITS, 0, DESIRED_SAMPLES) )
-}
+    Display.create (new PixelFormat (0, DEPTH_BUFFER_BITS, 0, DESIRED_SAMPLES) )
+  }
   catch {
-  case lwjgle: LWJGLException => {
-  // Replace this with text on screen
-  System.out.println ("Could not enable anti-aliasing. Brace yourself for jaggies.")
-  Display.create (new PixelFormat (0, DEPTH_BUFFER_BITS, 0, 0) )
-}
-}
+    case lwjgle: LWJGLException =>
+      // Replace this with text on screen
+      println("Could not enable anti-aliasing. Brace yourself for jaggies.")
+      Display.create (new PixelFormat (0, DEPTH_BUFFER_BITS, 0, 0) )
+  }
   // Get ready
-  prepareOpenGL ()
-  resizeOpenGL ()
-  initializeData ()
-  loadTextures ()
+  prepareOpenGL()
+  resizeOpenGL()
+  initializeData()
+  loadTextures()
 
   /**
     * The furthest away from this Camera that objects will be rendered.
@@ -189,20 +186,19 @@ extends GameStateListener {
     */
   private def loadTextures () {
   try {
-  dirtTexture = TextureLoader.getTexture ("PNG", ResourceLoader.getResourceAsStream ("res/dirt.png") )
-}
+    dirtTexture = TextureLoader.getTexture ("PNG", ResourceLoader.getResourceAsStream ("res/dirt.png") )
+  }
   catch {
-  case ioe: IOException => {
-  BlockSmith.LOGGER.log (Level.WARNING, ioe.toString, ioe)
-}
-}
+    case ioe: IOException =>
+    BlockSmith.LOGGER.log (Level.WARNING, ioe.toString, ioe)
+  }
   // Texture parameters
-  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST) // Minecraft! (try using GL_LINEAR and you'll see what I mean)
-  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-  glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST) // Minecraft! (try using GL_LINEAR and you'll see what I mean)
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
   // It will stay bound
-  dirtTexture.bind ()
+  dirtTexture.bind()
 }
 
   /**
@@ -241,22 +237,52 @@ extends GameStateListener {
     * @param z the z-coordinate
     * @return the vertices in interleaved XYZST format
     */
-  private def cubeData (x: Int, y: Int, z: Int): Array[Int] = {
-  return Array[Int] ( // 23*5 ints
-  x, y, z, 0, 0, // degenerate
-  x, y, z, 1, 0, x + 1, y, z, 1, 1, x, y + 1, z, 0, 0, x + 1, y + 1, z, 0, 1, x, y + 1, z - 1, 1, 0, x + 1, y + 1, z - 1, 1, 1, x, y, z - 1, 0, 0, x + 1, y, z - 1, 0, 1, x, y, z, 1, 0, x + 1, y, z, 1, 1, x + 1, y, z, 0, 0, // degenerate
-  x + 1, y, z, 0, 0, // degenerate
-  x + 1, y, z, 0, 1, x + 1, y, z - 1, 1, 1, x + 1, y + 1, z, 0, 0, x + 1, y + 1, z - 1, 1, 0, x + 1, y + 1, z - 1, 0, 0, // degenerate
-  x, y + 1, z - 1, 0, 0, // degenerate
-  x, y + 1, z - 1, 0, 0, x, y, z - 1, 0, 1, x, y + 1, z, 1, 0, x, y, z, 1, 1, x, y, z, 0, 0)
-}
+  private def cubeData (x: Int, y: Int, z: Int): Array[Int] = Array[Int](
+    // 23*5 ints
+    x, y, z, 0, 0, // degenerate
+
+    x, y, z, 1, 0,
+    x + 1, y, z, 1, 1,
+
+    x, y + 1, z, 0, 0,
+    x + 1, y + 1, z, 0, 1,
+
+    x, y + 1, z - 1, 1, 0,
+    x + 1, y + 1, z - 1, 1, 1,
+
+    x, y, z - 1, 0, 0,
+    x + 1, y, z - 1, 0, 1,
+
+    x, y, z, 1, 0,
+    x + 1, y, z, 1, 1,
+
+    x + 1, y, z, 0, 0, // degenerate
+    x + 1, y, z, 0, 0, // degenerate
+
+    x + 1, y, z, 0, 1,
+    x + 1, y, z - 1, 1, 1,
+
+    x + 1, y + 1, z, 0, 0,
+    x + 1, y + 1, z - 1, 1, 0,
+
+    x + 1, y + 1, z - 1, 0, 0, // degenerate
+    x, y + 1, z - 1, 0, 0, // degenerate
+
+    x, y + 1, z - 1, 0, 0,
+    x, y, z - 1, 0, 1,
+
+    x, y + 1, z, 1, 0,
+    x, y, z, 1, 1,
+
+    x, y, z, 0, 0  // degenerate
+  )
+
 
   /**
     * Updates the VBO when the a {@code chunk} in the GameState has changed.
     *
     * @param chunk the chunk that has changed
     */
-
   override def gameStateChunkChanged (chunk: Chunk) = {
     val data: Array[Array[Array[Byte]]] = chunk.getData
 

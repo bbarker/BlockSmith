@@ -36,7 +36,7 @@ object Camera {
     * This Vector will always point skyward. There is no need for a changing
     * "up" vector because the horizon should always be level.
     */
-  private val sky: Vector = new Vector(0, 1, 0)
+  private val sky: Vector = Vector(0, 1, 0)
 }
 
 final class Camera {
@@ -44,18 +44,18 @@ final class Camera {
     * The position, stored internally in OpenGL/right-handed coordinates. That is,
     * movement actions will change the Z-coordinate of {@code position} inversely.
     */
-  private val position: Vector = new Vector(0, 0, 0)
+  private val position: Vector = Vector(0, 0, 0)
   /**
     * Normalized Vector pointing to the right of this Camera.
     */
-  private var right: Vector = new Vector(1, 0, 0)
+  private var right: Vector = Vector(1, 0, 0)
   /**
     * The view or sight of this Camera, as a normalized Vector relative to
     * this Camera's position.
     *
     * @see #position
     */
-  private var sight: Vector = new Vector(0, 0, -1)
+  private var sight: Vector = Vector(0, 0, -1)
   /**
     * Keeps track of this Camera's pitch, used to avoid pitching below
     * -90 degrees or above +90 degrees.
@@ -96,7 +96,7 @@ final class Camera {
     * @param distance the distance to move forward by
     */
   def moveForward(distance: Float) {
-    position.add(new Vector(sight.x, 0, sight.z).normalized.scaled(distance))
+    position.add(Vector(sight.x, 0, sight.z).normalized.scaled(distance))
   }
 
   /**

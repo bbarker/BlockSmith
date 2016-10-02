@@ -8,9 +8,8 @@ import java.util.logging.{FileHandler, Level, Logger}
 import org.lwjgl.LWJGLException
 
 /**
-  * Mycraft is an open source java game that uses the LightWeight Java
-  * Game Library (LWJGL). It is inspired by the popular game Minecraft.
-  * It was written as a final summative project for the ICS2O course.
+  * BlockSmith is an open source java game that uses the LightWeight Java
+  * Game Library (LWJGL).
   *
   * "Minecraft" is an official trademark of Mojang AB. This work is not
   * formally related to, endorsed by or affiliated with Minecraft or Mojang AB.
@@ -36,7 +35,7 @@ object BlockSmith {
     // Any LWJGLExceptions that occur during the initialization of LWJGL
     // (Display, Keyboard, Mouse) will propagate up here and be caught.
     try {
-      System.out.println("Mycraft is starting up.")
+      System.out.println("BlockSmith is starting up.")
       controller = new GameController
       controller.run() // begin the main loop
     }
