@@ -17,7 +17,7 @@ You can build and run simply using [SBT](http://www.scala-sbt.org/) by doing `sb
 
 I honestly haven't even thought about this much or looked into it, but I would hope to engineer a system that prevents the kind of "x-ray vision" mods that are found in Minecraft. Post an issue if you know of a solution, possible solution, or other potential cheating mechanisms that are in Minecraft.
 
-### Support multiple (virtual) machines.
+### Support multiple targets
 
 In principle, we could abstract to run on native hardware using [Scala Native](http://www.scala-native.org/), in the browser using [Scala.js](https://www.scala-js.org/) and [voxel.js](http://voxeljs.com/), and of course on the JVM (or Android, etc.)*. 
 

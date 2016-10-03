@@ -53,19 +53,19 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     */
   private var numVerts: Int = 0
 
-  Display.setResizable(true)
+  //Display.setResizable(true)
   Display.setDisplayMode(new DisplayMode(DISPLAY_WIDTH, DISPLAY_HEIGHT) )
-  Display.setFullscreen (false)
-  Display.setTitle (WINDOW_TITLE)
+  Display.setFullscreen(false)
+  Display.setTitle(WINDOW_TITLE)
   // Try using oversampling for smooth edges.
   try {
-    Display.create (new PixelFormat (0, DEPTH_BUFFER_BITS, 0, DESIRED_SAMPLES) )
+    Display.create (new PixelFormat(0, DEPTH_BUFFER_BITS, 0, DESIRED_SAMPLES) )
   }
   catch {
     case lwjgle: LWJGLException =>
       // Replace this with text on screen
       println("Could not enable anti-aliasing. Brace yourself for jaggies.")
-      Display.create (new PixelFormat (0, DEPTH_BUFFER_BITS, 0, 0) )
+      Display.create (new PixelFormat(0, DEPTH_BUFFER_BITS, 0, 0) )
   }
 
   // Get ready
@@ -98,24 +98,44 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     * Resizes the OpenGL viewport and recalculates the projection matrix.
     */
   def resizeOpenGL() = {
-    glViewport (0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
-    glMatrixMode (GL_PROJECTION)
-    glLoadIdentity ()
-    gluPerspective (45, DISPLAY_WIDTH.toFloat / DISPLAY_HEIGHT.toFloat, 0.25f, renderDistance)
-    glMatrixMode (GL_MODELVIEW)
-    glLoadIdentity ()
+    glViewport(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    gluPerspective(45, DISPLAY_WIDTH.toFloat / DISPLAY_HEIGHT.toFloat, 0.25f, renderDistance)
+    glMatrixMode(GL_MODELVIEW)
+    glLoadIdentity()
   }
+
+  /**
+    * Testing updates to resize
+    */
+  def testResizeOpenGL() = {
+    glViewport(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
+//    glMatrixMode(GL_PROJECTION)
+//    glLoadIdentity()
+//    gluPerspective(45, DISPLAY_WIDTH.toFloat / DISPLAY_HEIGHT.toFloat, 0.25f, renderDistance)
+//    glMatrixMode(GL_MODELVIEW)
+//    glLoadIdentity()
+  }
+
 
   /**
     * Renders a GameState.
     *
     * @param state the GameState to render
     */
-  def render(state: GameState) {
+  def render(state: GameState) = {
     // Clear colour and z buffers
-    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     // Load the identity matrix
     glLoadIdentity ()
+    //
+    //FIXME: this block isn't working
+//    if (Display.wasResized()) {
+//      GameRenderer.DISPLAY_WIDTH = Display.getWidth
+//      GameRenderer.DISPLAY_HEIGHT = Display.getHeight
+//      testResizeOpenGL()
+//    }
     // Let the Camera calculate the view matrix
     state.getPlayerView.updateMatrix ()
     // Full brightness for textures
@@ -166,7 +186,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
   /**
     * Loads textures that will be used by this GameRenderer.
     */
-  private def loadTextures () {
+  private def loadTextures() = {
     try {
       dirtTexture = TextureLoader.getTexture ("PNG", ResourceLoader.getResourceAsStream ("res/dirt.png") )
     }
@@ -309,8 +329,8 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
 }
 
 object GameRenderer {
-  var DISPLAY_WIDTH: Int = 800
-  var DISPLAY_HEIGHT: Int = 600
+  var DISPLAY_WIDTH: Int = 1600
+  var DISPLAY_HEIGHT: Int = 1200
   private val DEPTH_BUFFER_BITS: Int = 24
   private val DESIRED_SAMPLES: Int = 8
   private val WINDOW_TITLE: String = "BlockSmith"

@@ -29,7 +29,7 @@ import io.github.bbaker.blocksmith.GameController._
   * @throws LWJGLException if there was an error loading any part of LWJGL
   */
 @throws[LWJGLException]
-final class GameController () {
+final class GameController() {
 
 
   /**
@@ -144,12 +144,6 @@ final class GameController () {
   def run () = {
     while (! Display.isCloseRequested && ! Keyboard.isKeyDown (Keyboard.KEY_ESCAPE) ) {
       if (Display.isVisible) {
-        //FIXME: this block isn't working
-//        if (Display.wasResized()) {
-//          GameRenderer.DISPLAY_WIDTH = Display.getWidth
-//          GameRenderer.DISPLAY_HEIGHT = Display.getHeight
-//          renderer.resizeOpenGL()
-//        }
         // Update the state with the required input
         state.update (new GameStateInputData(
           Keyboard.isKeyDown (Keyboard.KEY_W),
