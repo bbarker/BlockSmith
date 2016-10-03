@@ -2,9 +2,9 @@
 // Copyright 2012 Mitchell Kember. Subject to the MIT License.
 package io.github.bbaker.blocksmith
 
-import org.lwjgl.input.{Keyboard, Mouse}
-import org.lwjgl.opengl.Display
-import org.lwjgl.{LWJGLException, Sys}
+import org.lwjgl.input.{Cursor, Keyboard, Mouse}
+import org.lwjgl.opengl.{Display, GL11}
+import org.lwjgl.{BufferUtils, LWJGLException, Sys}
 
 
 
@@ -35,12 +35,12 @@ final class GameController () {
   /**
     * The renderer for this GameController's state.
     */
-  private val renderer: GameRenderer = new GameRenderer
+  private val renderer: GameRenderer = new GameRenderer()
 
   /**
     * The heart of the game, the GameState.
     */
-  private val state: GameState = new GameState (renderer)
+  private val state: GameState = new GameState(renderer)
 
   /**
     * Used for detecting space bar presses.
@@ -64,10 +64,16 @@ final class GameController () {
 
 
   Keyboard.create ()
+  val emptyCursor = new Cursor(1, 1, 0, 0, 1, BufferUtils.createIntBuffer(1), null)
   // This will make the mouse invisible. It will be "grabbed" by the
   // window, making it invisible and unable to leave the window.
-  Mouse.setGrabbed (true)
+  // Note for the above comment: i have set setGrabbed to false. At least on windows,
+  // I can't use the keyboard and mouse when setGrabbed is true. We can use emptyCursor
+  // to hide the cursor, but this is a double edged sword for gameplay in windowed mode.
+  Mouse.setGrabbed (false)
+  //ruMouse.setNativeCursor(emptyCursor)
   Mouse.create ()
+
 
   /**
     * Clean up LWJGL components.
@@ -138,6 +144,12 @@ final class GameController () {
   def run () = {
     while (! Display.isCloseRequested && ! Keyboard.isKeyDown (Keyboard.KEY_ESCAPE) ) {
       if (Display.isVisible) {
+        //FIXME: this block isn't working
+//        if (Display.wasResized()) {
+//          GameRenderer.DISPLAY_WIDTH = Display.getWidth
+//          GameRenderer.DISPLAY_HEIGHT = Display.getHeight
+//          renderer.resizeOpenGL()
+//        }
         // Update the state with the required input
         state.update (new GameStateInputData(
           Keyboard.isKeyDown (Keyboard.KEY_W),

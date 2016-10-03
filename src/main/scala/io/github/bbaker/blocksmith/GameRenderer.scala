@@ -53,8 +53,8 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     */
   private var numVerts: Int = 0
 
-
-  Display.setDisplayMode (new DisplayMode (DISPLAY_WIDTH, DISPLAY_HEIGHT) )
+  Display.setResizable(true)
+  Display.setDisplayMode(new DisplayMode(DISPLAY_WIDTH, DISPLAY_HEIGHT) )
   Display.setFullscreen (false)
   Display.setTitle (WINDOW_TITLE)
   // Try using oversampling for smooth edges.
@@ -78,7 +78,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     * Enables and Disables various OpenGL states. This should be called once when
     * the GameRenderer is created, before any rendering.
     */
-  private def prepareOpenGL () {
+  private def prepareOpenGL() = {
     glEnable (GL_CULL_FACE) // back face culling
     glEnable (GL_DEPTH_TEST) // z-buffer
     glEnable (GL_TEXTURE_2D) // textures
@@ -97,7 +97,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
   /**
     * Resizes the OpenGL viewport and recalculates the projection matrix.
     */
-  private def resizeOpenGL () {
+  def resizeOpenGL() = {
     glViewport (0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
     glMatrixMode (GL_PROJECTION)
     glLoadIdentity ()
@@ -111,7 +111,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     *
     * @param state the GameState to render
     */
-  def render (state: GameState) {
+  def render(state: GameState) {
     // Clear colour and z buffers
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     // Load the identity matrix
@@ -220,7 +220,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     * @param z the z-coordinate
     * @return the vertices in interleaved XYZST format
     */
-  private def cubeData (x: Int, y: Int, z: Int): Array[Int] = Array[Int](
+  private def cubeData(x: Int, y: Int, z: Int): Array[Int] = Array[Int](
     // 23*5 ints
     x, y, z, 0, 0, // degenerate
 
@@ -266,7 +266,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     *
     * @param chunk the chunk that has changed
     */
-  override def gameStateChunkChanged (chunk: Chunk) = {
+  override def gameStateChunkChanged(chunk: Chunk) = {
     val data: Array[Array[Array[Byte]]] = chunk.getData
 
     def putCubeData(bufSize: Int): IntBuffer = {
@@ -305,11 +305,12 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
       ARBBufferObject.GL_DYNAMIC_DRAW_ARB
     )
   }
+
 }
 
 object GameRenderer {
-  private val DISPLAY_WIDTH: Int = 800
-  private val DISPLAY_HEIGHT: Int = 600
+  var DISPLAY_WIDTH: Int = 800
+  var DISPLAY_HEIGHT: Int = 600
   private val DEPTH_BUFFER_BITS: Int = 24
   private val DESIRED_SAMPLES: Int = 8
   private val WINDOW_TITLE: String = "BlockSmith"

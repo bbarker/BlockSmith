@@ -46,6 +46,7 @@ object BlockSmith {
       if (controller != null) {
         // Clean up
         controller.destroy()
+        print("exiting BlockSmith")
       }
     }
   }

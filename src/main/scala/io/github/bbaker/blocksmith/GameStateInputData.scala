@@ -11,22 +11,6 @@ package io.github.bbaker.blocksmith
   * @author Mitchell Kember
   * @since 09/12/2011
   */
-object GameStateInputData {
-  private val DEFAULT_LOOK_SENSITIVITY: Float = 1.0f / 10.0f
-  private var lookSensitivity: Float = DEFAULT_LOOK_SENSITIVITY
-
-  /**
-    * Changes the look sensitivity. Smaller values will cause the view to pan
-    * around more slowly; for example if the mouse is used, a very small
-    * value would require lifting the mouse several times to turn around. Larger
-    * cause the view to pan around more quickly.
-    *
-    * @param lookSensitivity the new look sensitivity
-    */
-  def setLookSensitivity(lookSensitivity: Float) {
-    this.lookSensitivity = lookSensitivity * DEFAULT_LOOK_SENSITIVITY
-  }
-}
 
 import io.github.bbaker.blocksmith.GameStateInputData._
 
@@ -63,4 +47,21 @@ final class GameStateInputData(
   }
   this.breakBlock = breakBlock
   this.placeBlock = placeBlock
+}
+
+object GameStateInputData {
+  private val DEFAULT_LOOK_SENSITIVITY: Float = 1.0f / 10.0f
+  private var lookSensitivity: Float = DEFAULT_LOOK_SENSITIVITY
+
+  /**
+    * Changes the look sensitivity. Smaller values will cause the view to pan
+    * around more slowly; for example if the mouse is used, a very small
+    * value would require lifting the mouse several times to turn around. Larger
+    * cause the view to pan around more quickly.
+    *
+    * @param lookSensitivity the new look sensitivity
+    */
+  def setLookSensitivity(lookSensitivity: Float) {
+    this.lookSensitivity = lookSensitivity * DEFAULT_LOOK_SENSITIVITY
+  }
 }

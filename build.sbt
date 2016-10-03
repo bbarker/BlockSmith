@@ -9,6 +9,8 @@ scalaVersion := "2.11.8"
 
 Seq(lwjglSettings: _*)
 
+lwjgl.version := "2.9.3"
+
 // Seems to be missing
 //Seq(slickSettings: _*)
 
