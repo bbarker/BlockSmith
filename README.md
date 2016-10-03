@@ -2,7 +2,7 @@
 
 BlockSmith is a simple [Minecraft](https://minecraft.net) clone written in Scala, using [LWJGL](https://www.lwjgl.org). It is based on [Mitchell Kember](https://github.com/mk12)'s [Mycraft](https://github.com/bbarker/mycraft).
 
-Although I'm not actively looking for help at the moment, help and contribution are certainly appreciated! At the moment I aim to keep features fairly similar to MineCraft (similar to [TrueCraft](https://truecraft.io/)), though I'm not tied to a particular version, and I would like to support alternative builds that allow for experimentation or customization.
+Although I'm not actively looking for help (yet), contributions and advice are certainly appreciated! At the moment I aim to keep features fairly similar to Minecraft (similar to [TrueCraft](https://truecraft.io/)), though I'm not tied to a particular version, and I would like to support alternative builds that allow for experimentation or customization.
 
 ## Building
 
@@ -15,7 +15,7 @@ You can build and run simply using [SBT](http://www.scala-sbt.org/) by doing `sb
 
 ### Support anti-cheating features
 
-I honestly haven't even thought about this much or looked into it, but I would hope to engineer a system that prevents the kind of "x-ray vision" mods that are found in Minecraft. Post an issue if you know of a solution, possible solution, or other potential cheating mechanisms that are in Minecraft.
+I haven't even thought about this much or looked into it, but I would hope to have a system that prevents the kind of "x-ray vision" mods that are found in Minecraft. Please post an issue if you know of a solution, possible solution, or other potential cheating mechanisms that are in Minecraft.
 
 ### Support multiple targets
 
@@ -31,4 +31,4 @@ Modified work © 2016 Brandon Barker
 
 BlockSmith is available under the MPL 2.0 License; see [LICENSE](LICENSE.md) for details.
 
-BlockSmith v0.0.1 and earlier is also available under the MIT License; see [LICENSE-Origina](LICENSE-Original.md) for details.
+BlockSmith v0.0.1 and earlier is also available under the MIT License; see [LICENSE-Original](LICENSE-Original.md) for details.
