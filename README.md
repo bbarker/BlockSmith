@@ -8,7 +8,14 @@ Although I'm not actively looking for help (yet), contributions and advice are c
 
 ### SBT
 
-You can build and run simply using [SBT](http://www.scala-sbt.org/) by doing `sbt run` from the directory, after you have installed `sbt` on your `PATH`.
+You can build and run simply using [SBT](http://www.scala-sbt.org/) by doing the following from the command line in the project directory after you have installed `sbt` on your `PATH`:
+
+```
+sbt 
+compile
+project BlockSmithJVM
+run
+```
 
 
 ## Future Goals
