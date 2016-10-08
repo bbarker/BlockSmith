@@ -2,6 +2,8 @@
 // Copyright 2012 Mitchell Kember. Subject to the MIT License.
 package io.github.bbaker.blocksmith
 
+import Coordinates._
+
 import scala.util.control.Breaks._
 
 /**
@@ -26,9 +28,9 @@ final class GameState (var listener: GameStateListener) {
     */
   private val player: Player = new Player
   /**
-    * The one and only Chunk... so far.
+    * The one and only World... so far.
     */
-  private val chunk: Chunk = new Chunk
+  private val world: World = new World()
   /**
     * The currently selected block.
     */
@@ -45,7 +47,7 @@ final class GameState (var listener: GameStateListener) {
     */
   private val ARM_LENGTH: Float = 6
 
-  listener.gameStateChunkChanged(chunk)
+  listener.gameStateChunkChanged(world.startChunk)
 
 
   /**
@@ -62,6 +64,7 @@ final class GameState (var listener: GameStateListener) {
     val multiplier: Float = deltaTime / (100.0f / 6.0f)
     // Player movement
     player.move(input, multiplier)
+    val chunk = world.chunk(player.coords2d)
     player.collision(chunk)
     if (input.jump) player.jump()
     // Set selectedBlock and newBlock

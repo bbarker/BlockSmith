@@ -35,7 +35,7 @@ object BlockSmith {
     // Any LWJGLExceptions that occur during the initialization of LWJGL
     // (Display, Keyboard, Mouse) will propagate up here and be caught.
     try {
-      System.out.println("BlockSmith is starting up.")
+      println("BlockSmith is starting up.")
       controller = new GameController
       controller.run() // begin the main loop
     }

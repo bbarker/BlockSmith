@@ -2,6 +2,8 @@
 // Copyright 2012 Mitchell Kember. Subject to the MIT License.
 package io.github.bbaker.blocksmith
 
+import io.github.bbaker.blocksmith.Coordinates.Coords2d
+
 /**
   * Vector represents a three-dimensional (3D) vector. In particular, it provides
   * two of most operations, one mutating the current Vector and another returning
@@ -201,4 +203,6 @@ final class Vector(/**
   def invertedZ: Vector = {
     new Vector(x, y, -z)
   }
+
+  def xzProj = Coords2d(x.toInt, z.toInt)
 }
