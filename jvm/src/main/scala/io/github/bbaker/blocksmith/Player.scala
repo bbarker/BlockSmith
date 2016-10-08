@@ -2,6 +2,8 @@
 // Copyright 2012 Mitchell Kember. Subject to the MIT License.
 package io.github.bbaker.blocksmith
 
+import io.github.bbaker.blocksmith.Coordinates.Coords2d
+
 /**
   * Player represents the user in the Mycraft world. A Player is primarily a view
   * into the Mycraft world, and so much of the work is done by the Camera which
@@ -65,19 +67,21 @@ class Player {
     }
   }
 
+  def coords2d: Coords2d = camera.getPosition.xzProj
+
   /**
     * Checks for collision with blocks and moves the Camera accordingly.
     * F
     *
     * @param chunk the Chunk this Player is in
     */
-  def collision(chunk: Chunk) {
+  def collision(chunk: Chunk): Unit = {
     // Boundaries (Y boundaries are handled by the jumping code in the move method).
     val position: Vector = camera.getPosition
-    if (position.x < 0) camera.setPositionX(0)
-    else if (position.x > 16) camera.setPositionX(16)
-    if (position.z < 0) camera.setPositionZ(0)
-    else if (position.z > 16) camera.setPositionZ(16)
+//    if (position.x < 0) camera.setPositionX(0)
+//    else if (position.x > 16) camera.setPositionX(16)
+//    if (position.z < 0) camera.setPositionZ(0)
+//    else if (position.z > 16) camera.setPositionZ(16)
     // Right and left
     if (deltaPosition.x > 0) {
       if (Math.round(position.x) < 16 && Math.round(position.x) > position.x && ((position.z - 0.25f >= 0 && chunk.getBlockType(Block(Math.round(position.x), height.toInt, (position.z - 0.25f).toInt)) != 0)
@@ -158,7 +162,7 @@ class Player {
     * @param input the user input
     * @param multiplier
     */
-  def move(input: GameStateInputData, multiplier: Float) {
+  def move(input: GameStateInputData, multiplier: Float): Unit = {
     val previousPosition: Vector = camera.getPosition
     // Movement
     if (input.forward) {

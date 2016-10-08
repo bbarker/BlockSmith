@@ -8,4 +8,5 @@ package io.github.bbaker.blocksmith
   *
   * @author Mitchell Kember
   */
+//TODO: add coords3D
 case class Block (x: Int, y: Int, z: Int) 

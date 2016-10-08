@@ -2,6 +2,8 @@
 // Copyright 2012 Mitchell Kember. Subject to the MIT License.
 package io.github.bbaker.blocksmith
 
+import Coordinates._
+
 import scala.util.control.Breaks._
 
 /**
@@ -18,17 +20,25 @@ import scala.util.control.Breaks._
   * Creates a new GameState with the specified class implementing
   * GamStateListener to listen for state changes.
   *
-  * @param listener the object to receive state change events (usually the renderer)
   */
-final class GameState (var listener: GameStateListener) {
+final class GameState() {
+
+  /**
+    * the object to receive state change events (usually the renderer)
+    */
+  private var listener: GameStateListener = new GameStateListener {
+    // Dummy listener
+    override def gameStateChunkChanged(chunk: Chunk): Unit =
+      println("GameState not set yet!")
+  }
   /**
     * The one and only Player.
     */
   private val player: Player = new Player
   /**
-    * The one and only Chunk... so far.
+    * The one and only World... so far.
     */
-  private val chunk: Chunk = new Chunk
+  val world: World = new World(listener)
   /**
     * The currently selected block.
     */
@@ -45,9 +55,17 @@ final class GameState (var listener: GameStateListener) {
     */
   private val ARM_LENGTH: Float = 6
 
-  listener.gameStateChunkChanged(chunk)
+  /**
+    * @param listener the object to receive state change events (usually the renderer)
+    */
+  def setListener(listener: GameStateListener): Unit = {
+    this.listener = listener
+    world.setListener(listener)
+  }
 
 
+
+  //TODO: need to somehow render "dirty" chunks, but minimize state tracking. Do it in renderer?
   /**
     * Updates the GameState, responding to user input through {@code GameStateInputData}.
     * This should be called every frame.
@@ -56,12 +74,13 @@ final class GameState (var listener: GameStateListener) {
     * @param deltaTime time passed since the last call in milliseconds
     * @see GameStateInputData
     */
-  def update(input: GameStateInputData, deltaTime: Float) {
+  def update(input: GameStateInputData, deltaTime: Float): Unit = {
     // Everything is simulated to look correct at 60FPS, and is multiplied
     // by this to match the real framerate.
     val multiplier: Float = deltaTime / (100.0f / 6.0f)
     // Player movement
     player.move(input, multiplier)
+    val chunk = world.chunk(player.coords2d)
     player.collision(chunk)
     if (input.jump) player.jump()
     // Set selectedBlock and newBlock
@@ -81,6 +100,7 @@ final class GameState (var listener: GameStateListener) {
     }
   }
 
+  //TODO: also need to check that we can select blocks in neighboring chunks
   /**
     * Calculates {@code selectedBlock} and {@code newBlock}.
     *
@@ -117,6 +137,7 @@ final class GameState (var listener: GameStateListener) {
             if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
               selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
               if (selectedBlock.z - 1 >= 0) {
+                println(s"selected new block A in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
                 newBlock = Block(selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
                 if (chunk.getBlockType(newBlock) != 0) newBlock = null
               }
@@ -128,6 +149,7 @@ final class GameState (var listener: GameStateListener) {
             if (ray.z - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int] - 1)) != 0) {
               selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int] - 1)
               if (selectedBlock.z + 1 < 16) {
+                println(s"selected new block B in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
                 newBlock = Block(selectedBlock.x, selectedBlock.y, selectedBlock.z + 1)
                 if (chunk.getBlockType(newBlock) != 0) newBlock = null
               }
@@ -154,6 +176,7 @@ final class GameState (var listener: GameStateListener) {
               if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
                 selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
                 if (selectedBlock.x - 1 >= 0) {
+                  println(s"selected new block C in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
                   newBlock = Block(selectedBlock.x - 1, selectedBlock.y, selectedBlock.z)
                   if (chunk.getBlockType(newBlock) != 0) newBlock = null
                 }
@@ -165,6 +188,7 @@ final class GameState (var listener: GameStateListener) {
               if (ray.x - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int] - 1, ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
                 selectedBlock = Block(ray.x.asInstanceOf[Int] - 1, ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
                 if (selectedBlock.x + 1 < 16) {
+                  println(s"selected new block D in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
                   newBlock = Block(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
                   if (chunk.getBlockType(newBlock) != 0) newBlock = null
                 }
@@ -195,6 +219,7 @@ final class GameState (var listener: GameStateListener) {
               if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
                 selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
                 if (selectedBlock.y - 1 >= 0) {
+                  println(s"selected new block E in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
                   newBlock = Block(selectedBlock.x, selectedBlock.y - 1, selectedBlock.z)
                   if (chunk.getBlockType(newBlock) != 0) newBlock = null
                 }
@@ -206,6 +231,7 @@ final class GameState (var listener: GameStateListener) {
               if (ray.y - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])) != 0) {
                 selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])
                 if (selectedBlock.y + 1 < 16) {
+                  println(s"selected new block F in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
                   newBlock = Block(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
                   if (chunk.getBlockType(newBlock) != 0) newBlock = null
                 }

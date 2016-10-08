@@ -6,6 +6,8 @@ import java.io.IOException
 import java.nio.{BufferOverflowException, IntBuffer}
 import java.util.logging.Level
 
+import scala.collection.mutable
+
 import org.lwjgl.opengl.GL11._
 import org.lwjgl.opengl._
 import org.lwjgl.util.glu.GLU._
@@ -31,7 +33,14 @@ import io.github.bbaker.blocksmith.GameRenderer._
   *
   * @throws LWJGLException if there is an error setting up the window
   */
-final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
+final class GameRenderer @throws[LWJGLException]()
+(implicit val gameState: GameState) extends GameStateListener {
+
+  // Vertex Data interleaved format: XYZST
+  private val position: Int = 3
+  private val texcoords: Int = 2
+  private val sizeOfInt: Int = 4 // 4 bytes in an int
+  private val vertexDataSize: Int = (position + texcoords) * sizeOfInt
 
   /**
     * The furthest away from this Camera that objects will be rendered.
@@ -39,19 +48,26 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
   private val renderDistance: Float = 50
 
   /**
-    * The ID for the Vertex Buffer Object (VBO).
-    */
-  private var bufferObjectID: Int = 0
-
-  /**
     * A simple 16 by 16 dirt texture.
     */
   private var dirtTexture: Texture = null
 
   /**
-    * The number of vertices last uploaded to the VBO.
+    * The Chunks currently being rendered by the client.
     */
-  private var numVerts: Int = 0
+  val renderedChunkMap: mutable.Map[Long, Int] = mutable.Map()
+
+  //TODO: precisely calculate fixed bufSize
+  //TODO: implement this as some sort of priority set around the player
+  /**
+    * Vertices to upload to the VBO; maps a VBO Id to the VBO buffer
+    */
+  val vboStore: mutable.Map[Int, IntBuffer] = mutable.Map()
+
+  /**
+    * Maps a VBO Id to the VBO buffer position (# of vertices)
+    */
+  val vboPosition: mutable.Map[Int, Int] = mutable.Map()
 
   //Display.setResizable(true)
   Display.setDisplayMode(new DisplayMode(DISPLAY_WIDTH, DISPLAY_HEIGHT) )
@@ -71,14 +87,17 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
   // Get ready
   prepareOpenGL()
   resizeOpenGL()
-  initializeData()
   loadTextures()
 
   /**
     * Enables and Disables various OpenGL states. This should be called once when
     * the GameRenderer is created, before any rendering.
     */
-  private def prepareOpenGL() = {
+  private def prepareOpenGL(): Unit = {
+    if (! GLContext.getCapabilities.GL_ARB_vertex_buffer_object) {
+      BlockSmith.LOGGER.log (Level.SEVERE, "GL_ARB_vertex_buffer_object not supported.")
+      throw new LWJGLException ("GL_ARB_vertex_buffer_object not supported")
+    }
     glEnable (GL_CULL_FACE) // back face culling
     glEnable (GL_DEPTH_TEST) // z-buffer
     glEnable (GL_TEXTURE_2D) // textures
@@ -87,7 +106,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     glDisable (GL_STENCIL_TEST)
     glDisable (GL_DITHER)
     glDisable (GL_LIGHTING)
-    // Cross hair and selected block hilighting
+    // Cross hair and selected block highlighting
     glLineWidth (2.0f)
     glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
     // Background colour
@@ -97,7 +116,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
   /**
     * Resizes the OpenGL viewport and recalculates the projection matrix.
     */
-  def resizeOpenGL() = {
+  def resizeOpenGL(): Unit = {
     glViewport(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
@@ -109,7 +128,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
   /**
     * Testing updates to resize
     */
-  def testResizeOpenGL() = {
+  def testResizeOpenGL(): Unit = {
     glViewport(0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT)
 //    glMatrixMode(GL_PROJECTION)
 //    glLoadIdentity()
@@ -124,7 +143,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     *
     * @param state the GameState to render
     */
-  def render(state: GameState) = {
+  def render(state: GameState): Unit = {
     // Clear colour and z buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     // Load the identity matrix
@@ -140,11 +159,22 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     state.getPlayerView.updateMatrix ()
     // Full brightness for textures
     glColor3b(127.toByte, 127.toByte, 127.toByte)
-    // Start at 1 to avoid drawing 1st degenerate vertex and messing everything else up
-    glDrawArrays (GL_TRIANGLE_STRIP, 1, numVerts)
+
+    vboStore.foreach {
+      case (vboId, vertexData) =>
+        ARBBufferObject.glBindBufferARB(
+          ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, vboId
+        )
+        glVertexPointer(3, GL_INT, vertexDataSize, 0)
+        // Start at 1 to avoid drawing 1st degenerate vertex
+        // and messing everything else up
+        glDrawArrays(GL_TRIANGLE_STRIP, 1, vboPosition(vboId))
+      case _ => println("No VBOs!")
+    }
+
     // Black lines
     glColor3b((-127).toByte, (-127).toByte, (-127).toByte)
-    // Draw selected block outline hilight
+    // Draw selected block outline highlight
     if (state.isBlockSelected) {
       val selectedBlock: Vector = GameRenderer.openGLCoordinatesForBlock (state.getSelectedBlock)
       // Just use immediate mode/fixed function pipeline
@@ -186,7 +216,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
   /**
     * Loads textures that will be used by this GameRenderer.
     */
-  private def loadTextures() = {
+  private def loadTextures(): Unit = {
     try {
       dirtTexture = TextureLoader.getTexture ("PNG", ResourceLoader.getResourceAsStream ("res/dirt.png") )
     }
@@ -205,30 +235,22 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
   }
 
   /**
-    * Creates the VBO that this GameRenderer will use.
+    * Creates a VBO for the GameRenderer; one VBO per chunk.
     *
     * @throws LWJGLException if VBOs are not supported
     */
   @throws[LWJGLException]
-  private def initializeData () = {
-    if (! GLContext.getCapabilities.GL_ARB_vertex_buffer_object) {
-      BlockSmith.LOGGER.log (Level.SEVERE, "GL_ARB_vertex_buffer_object not supported.")
-      throw new LWJGLException ("GL_ARB_vertex_buffer_object not supported")
-    }
+  private def createVbo(): Int = {
     // Create it
-    bufferObjectID = ARBBufferObject.glGenBuffersARB
-    // Vertex Data interleaved format: XYZST
-    val position: Int = 3
-    val texcoords: Int = 2
-    val sizeOfInt: Int = 4 // 4 bytes in an int
-    val vertexDataSize: Int = (position + texcoords) * sizeOfInt
+    val bufferObjectID = ARBBufferObject.glGenBuffersARB
     // Bind it
       ARBBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, bufferObjectID)
     // Vertex and texture pointers
-    glVertexPointer (3, GL_INT, vertexDataSize, 0)
-    glTexCoordPointer (2, GL_INT, vertexDataSize, position * sizeOfInt)
-    glEnableClientState (GL_VERTEX_ARRAY)
-    glEnableClientState (GL_TEXTURE_COORD_ARRAY)
+    glVertexPointer(3, GL_INT, vertexDataSize, 0)
+    glTexCoordPointer(2, GL_INT, vertexDataSize, position * sizeOfInt)
+    glEnableClientState(GL_VERTEX_ARRAY)
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY)
+    bufferObjectID
   }
 
   /**
@@ -290,17 +312,30 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     val data: Array[Array[Array[Byte]]] = chunk.getData
 
     def putCubeData(bufSize: Int): IntBuffer = {
-      val vertexData: IntBuffer = BufferUtils.createIntBuffer(bufSize)
-      for {
-        xx <- 0 until 16
-        yy <- 0 until 16
-        zz <- 0 until -16 by -1
-      } yield {
-        if (data(xx)(yy)(-zz) !=0 ) {
-          vertexData.put(cubeData(xx, yy, zz))
-        }
+      gameState.world.chunkId(chunk.region2d) match {
+        case Some(chunkId) =>
+          val vboId: Int = renderedChunkMap.getOrElse(chunkId, createVbo())
+          val vertexData: IntBuffer = vboStore.getOrElse(vboId,
+            BufferUtils.createIntBuffer(bufSize)
+          )
+          for {
+            xx <- 0 until Chunk.width
+            yy <- 0 until Chunk.height
+            zz <- 0 until -Chunk.depth by -1
+          } yield {
+            if (data(xx)(yy)(-zz) !=0 ) {
+              vertexData.put(cubeData(
+                chunk.xx * Chunk.width + xx, yy, chunk.zz * Chunk.depth + zz
+              ))
+            }
+          }
+          vboStore(vboId) = vertexData
+          vboPosition(vboId) = vertexData.position / 5
+          vertexData
+        case None =>
+          println("No chunk to render!")
+          BufferUtils.createIntBuffer(0)
       }
-      vertexData
     }
 
     val vertexData: IntBuffer = try {
@@ -311,13 +346,12 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
       } catch {
         case boe2: BufferOverflowException =>
           // Bail out
-          System.out.println ("Oops! Mycraft has crashed!")
+          println ("Oops! BlockSmith has crashed!")
           BlockSmith.LOGGER.log (Level.SEVERE, boe2.toString, boe2)
           System.exit(1)
           BufferUtils.createIntBuffer(0) // Never reached
       }
     }
-    numVerts = vertexData.position / 5
     vertexData.flip
     // Upload data
     ARBBufferObject.glBufferDataARB(
@@ -346,5 +380,5 @@ object GameRenderer {
     * @return its rendering coordinates
     */
   def openGLCoordinatesForBlock(block: Block): Vector =
-  Vector(block.x, block.y, -block.z)
+    Vector(block.x, block.y, -block.z)
 }

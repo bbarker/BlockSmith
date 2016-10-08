@@ -10,14 +10,34 @@ package io.github.bbaker.blocksmith
   * @author Mitchell Kember
   * @since 09/12/2011
   */
-final class Chunk {
+
+import Chunk._
+import io.github.bbaker.blocksmith.math.Arithmetic._
+import io.github.bbaker.blocksmith.Coordinates.Region2d
+final class Chunk private(val region2d: Region2d) {
+
+  def xx = region2d.xx
+  def zz = region2d.zz
+
+  println(s"Added new chunk at $xx, $zz") // DEBUG
+
   /**
     * This 3D array stores all the types of the blocks in this Chunk. It is in
     * the following format:
     *
     * {@code data[x][y][z]}
     */
-  private val data: Array[Array[Array[Byte]]] = Array.ofDim(16, 16, 16)
+  private val data: Array[Array[Array[Byte]]] = Array.ofDim(width, depth, height)
+
+
+  // Place a ground layer of blocks
+  for {
+    xx <- 0 until width
+    zz <- 0 until depth
+  } yield {
+    data(xx)(0)(zz) = 1
+  }
+
 
   /**
     * Gets this Chunk's data array.
@@ -42,14 +62,22 @@ final class Chunk {
     * @param block the location of the block.
     * @return its type id
     */
-  def getBlockType(block: Block): Byte = data(block.x)(block.y)(block.z)
-
-  // Place a ground layer of blocks
-  for {
-    xx <- 0 until 16
-    zz <- 0 until 16
-  } yield {
-    data(xx)(0)(zz) = 1
+  def getBlockType(block: Block): Byte = {
+    val xLocal  =  block.x %+ width
+    val zLocal  =  block.z %+ depth
+    val yLocal  =  block.y %+ height
+    data(xLocal)(yLocal)(zLocal)
   }
+}
 
+object Chunk{
+  val width = 16
+  val depth = 16
+  val height = 16
+
+  def apply(region2d: Region2d, world: World): Chunk = {
+    val newChunk = new Chunk(region2d)
+    world.setChunkId(newChunk)
+    newChunk
+  }
 }

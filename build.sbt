@@ -21,10 +21,15 @@ lazy val root = project.in(file(".")).
 mainClass in (Compile,run) := Some("io.github.bbaker.blocksmith.BlockSmith")
 
 lazy val BlockSmith = crossProject.in(file(".")).
+  configs(IntegrationTest).
+  settings(Defaults.itSettings: _*).
   settings(
     name := "BlockSmith",
     description := "BlockSmith is currently an experiment in the ways of MineCraft.",
-    version := "0.1.0-SNAPSHOT"
+    version := "0.1.0-SNAPSHOT",
+    libraryDependencies ++= Seq(
+      "org.specs2" %% "specs2-core" % "3.8.5" % "it,test"
+    )
   ).
   jvmSettings(
     // Add JVM-specific settings here
