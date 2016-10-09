@@ -12,7 +12,7 @@ package io.github.bbaker.blocksmith
   */
 
 import Chunk._
-import Math._
+import io.github.bbaker.blocksmith.math.Arithmetic._
 import io.github.bbaker.blocksmith.Coordinates.Region2d
 final class Chunk private (xx: Int, zz:Int) {
 
