@@ -69,7 +69,7 @@ final class Camera {
     * Call after all Camera transformations and before rendering. It is
     * assumed that the identity matrix has been loaded.
     */
-  def updateMatrix() = {
+  def updateMatrix(): Unit = {
     // Get the absolute coordinate of the view direction
     val lookAt: Vector = position.plus(sight)
     // Multiply onto the matrix stack
@@ -84,7 +84,7 @@ final class Camera {
     *
     * @param vec the movement Vector
     */
-  def move(vec: Vector) = {
+  def move(vec: Vector): Unit = {
     position.add(vec.invertedZ)
   }
 
@@ -95,7 +95,7 @@ final class Camera {
     *
     * @param distance the distance to move forward by
     */
-  def moveForward(distance: Float) = {
+  def moveForward(distance: Float): Unit = {
     position.add(Vector(sight.x, 0, sight.z).normalized.scaled(distance))
   }
 
@@ -106,7 +106,7 @@ final class Camera {
     *
     * @param distance the distance to move to the right by
     */
-  def strafeRight(distance: Float) = {
+  def strafeRight(distance: Float): Unit = {
     position.add(right.scaled(distance))
   }
 
@@ -134,7 +134,7 @@ final class Camera {
     *
     * @param angle degrees to rotate by
     */
-  def yaw(angle: Float) = {
+  def yaw(angle: Float): Unit = {
     sight = Vector.axisRotation(sight, Camera.sky, -angle * Camera.DEG_TO_RAD)
     right = Vector.cross(sight, Camera.sky).normalized
   }
@@ -144,7 +144,7 @@ final class Camera {
     *
     * @param x the new position's X-coordinate
     */
-  def setPositionX(x: Float) = {
+  def setPositionX(x: Float): Unit = {
     position.x = x
   }
 
@@ -153,7 +153,7 @@ final class Camera {
     *
     * @param y the new position's Y-coordinate
     */
-  def setPositionY(y: Float) = {
+  def setPositionY(y: Float): Unit = {
     position.y = y
   }
 
@@ -162,7 +162,7 @@ final class Camera {
     *
     * @param z the new position's Z-coordinate
     */
-  def setPositionZ(z: Float) = {
+  def setPositionZ(z: Float): Unit = {
     position.z = -z
   }
 

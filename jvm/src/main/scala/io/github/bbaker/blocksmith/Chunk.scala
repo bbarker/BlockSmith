@@ -15,7 +15,7 @@ import Chunk._
 import io.github.bbaker.blocksmith.Coordinates.Region2d
 final class Chunk private (xx: Int, zz:Int) {
 
-  println(s"Added new chunck at $xx, $zz") // DEBUG
+  println(s"Added new chunk at $xx, $zz") // DEBUG
 
   /**
     * This 3D array stores all the types of the blocks in this Chunk. It is in
@@ -60,8 +60,8 @@ final class Chunk private (xx: Int, zz:Int) {
     */
   def getBlockType(block: Block): Byte = {
     val xLocal  =  block.x % width
-    val yLocal  =  block.z % depth
-    val zLocal  =  block.y % height
+    val zLocal  =  block.z % depth
+    val yLocal  =  block.y % height
     data(xLocal)(yLocal)(zLocal)
   }
 }

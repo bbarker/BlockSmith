@@ -50,6 +50,7 @@ final class GameState (var listener: GameStateListener) {
   listener.gameStateChunkChanged(world.startChunk)
 
 
+  //TODO: need to somehow render "dirty" chunks, but minimize state tracking. Do it in renderer?
   /**
     * Updates the GameState, responding to user input through {@code GameStateInputData}.
     * This should be called every frame.
@@ -72,11 +73,13 @@ final class GameState (var listener: GameStateListener) {
     // Break or place a block
     if (selectedBlock != null && newBlock != null) {
       if (input.breakBlock) {
+        println("break block!") // DEBUG
         chunk.setBlockType(selectedBlock, 0.toByte)
         // Notify the listener
         listener.gameStateChunkChanged(chunk)
       }
       else if (input.placeBlock) {
+        println("place block!") // DEBUG
         chunk.setBlockType(newBlock, 1.toByte)
         // Notify the listener
         listener.gameStateChunkChanged(chunk)
