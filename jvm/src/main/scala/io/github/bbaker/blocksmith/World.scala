@@ -8,7 +8,7 @@ import scala.collection.mutable
   *         10/8/2016
   *         Copyright 2016. Subject to the Mozilla Public License 2.0.
   */
-class World {
+class World()(implicit val listener: GameStateListener) {
 
   protected val chunkStore: mutable.Map[Region2d, Chunk] = mutable.Map()
   val hotChunkCoords: mutable.Set[Region2d] = mutable.Set()
@@ -23,6 +23,7 @@ class World {
     val newChunk = Chunk(coords)
     println(s"new chunk at $coords") // DEBUG
     chunkStore(coords) = newChunk
+    listener.gameStateChunkChanged(newChunk)
     newChunk
   })
 

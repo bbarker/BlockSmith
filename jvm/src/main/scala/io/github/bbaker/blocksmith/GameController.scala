@@ -35,12 +35,12 @@ final class GameController() {
   /**
     * The renderer for this GameController's state.
     */
-  private val renderer: GameRenderer = new GameRenderer()
+  private implicit val renderer: GameRenderer = new GameRenderer()
 
   /**
     * The heart of the game, the GameState.
     */
-  private val state: GameState = new GameState(renderer)
+  private val state: GameState = new GameState()
 
   /**
     * Used for detecting space bar presses.

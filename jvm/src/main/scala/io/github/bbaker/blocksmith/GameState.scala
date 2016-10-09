@@ -22,7 +22,7 @@ import scala.util.control.Breaks._
   *
   * @param listener the object to receive state change events (usually the renderer)
   */
-final class GameState (var listener: GameStateListener) {
+final class GameState()(implicit val listener: GameStateListener) {
   /**
     * The one and only Player.
     */
@@ -73,13 +73,11 @@ final class GameState (var listener: GameStateListener) {
     // Break or place a block
     if (selectedBlock != null && newBlock != null) {
       if (input.breakBlock) {
-        println("break block!") // DEBUG
         chunk.setBlockType(selectedBlock, 0.toByte)
         // Notify the listener
         listener.gameStateChunkChanged(chunk)
       }
       else if (input.placeBlock) {
-        println("place block!") // DEBUG
         chunk.setBlockType(newBlock, 1.toByte)
         // Notify the listener
         listener.gameStateChunkChanged(chunk)

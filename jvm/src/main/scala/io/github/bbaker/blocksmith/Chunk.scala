@@ -12,6 +12,7 @@ package io.github.bbaker.blocksmith
   */
 
 import Chunk._
+import Math._
 import io.github.bbaker.blocksmith.Coordinates.Region2d
 final class Chunk private (xx: Int, zz:Int) {
 
@@ -59,9 +60,9 @@ final class Chunk private (xx: Int, zz:Int) {
     * @return its type id
     */
   def getBlockType(block: Block): Byte = {
-    val xLocal  =  block.x % width
-    val zLocal  =  block.z % depth
-    val yLocal  =  block.y % height
+    val xLocal  =  block.x %+ width
+    val zLocal  =  block.z %+ depth
+    val yLocal  =  block.y %+ height
     data(xLocal)(yLocal)(zLocal)
   }
 }
