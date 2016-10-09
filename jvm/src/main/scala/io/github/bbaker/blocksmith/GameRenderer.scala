@@ -186,7 +186,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
   /**
     * Loads textures that will be used by this GameRenderer.
     */
-  private def loadTextures() = {
+  private def loadTextures(): Unit = {
     try {
       dirtTexture = TextureLoader.getTexture ("PNG", ResourceLoader.getResourceAsStream ("res/dirt.png") )
     }
@@ -210,7 +210,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     * @throws LWJGLException if VBOs are not supported
     */
   @throws[LWJGLException]
-  private def initializeData () = {
+  private def initializeData(): Unit = {
     if (! GLContext.getCapabilities.GL_ARB_vertex_buffer_object) {
       BlockSmith.LOGGER.log (Level.SEVERE, "GL_ARB_vertex_buffer_object not supported.")
       throw new LWJGLException ("GL_ARB_vertex_buffer_object not supported")
@@ -292,12 +292,14 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
     def putCubeData(bufSize: Int): IntBuffer = {
       val vertexData: IntBuffer = BufferUtils.createIntBuffer(bufSize)
       for {
-        xx <- 0 until 16
-        yy <- 0 until 16
-        zz <- 0 until -16 by -1
+        xx <- 0 until Chunk.width
+        yy <- 0 until Chunk.height
+        zz <- 0 until -Chunk.depth by -1
       } yield {
         if (data(xx)(yy)(-zz) !=0 ) {
-          vertexData.put(cubeData(xx, yy, zz))
+          vertexData.put(cubeData(
+            chunk.xx * Chunk.width + xx, yy, chunk.zz * Chunk.depth + zz
+          ))
         }
       }
       vertexData
@@ -311,7 +313,7 @@ final class GameRenderer @throws[LWJGLException]() extends GameStateListener {
       } catch {
         case boe2: BufferOverflowException =>
           // Bail out
-          System.out.println ("Oops! Mycraft has crashed!")
+          println ("Oops! BlockSmith has crashed!")
           BlockSmith.LOGGER.log (Level.SEVERE, boe2.toString, boe2)
           System.exit(1)
           BufferUtils.createIntBuffer(0) // Never reached
@@ -346,5 +348,5 @@ object GameRenderer {
     * @return its rendering coordinates
     */
   def openGLCoordinatesForBlock(block: Block): Vector =
-  Vector(block.x, block.y, -block.z)
+    Vector(block.x, block.y, -block.z)
 }

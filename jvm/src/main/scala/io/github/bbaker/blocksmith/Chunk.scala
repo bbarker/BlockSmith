@@ -14,7 +14,7 @@ package io.github.bbaker.blocksmith
 import Chunk._
 import io.github.bbaker.blocksmith.math.Arithmetic._
 import io.github.bbaker.blocksmith.Coordinates.Region2d
-final class Chunk private (xx: Int, zz:Int) {
+final class Chunk private(val xx: Int, val zz:Int) {
 
   println(s"Added new chunk at $xx, $zz") // DEBUG
 

@@ -75,7 +75,7 @@ class Player {
     *
     * @param chunk the Chunk this Player is in
     */
-  def collision(chunk: Chunk) {
+  def collision(chunk: Chunk): Unit = {
     // Boundaries (Y boundaries are handled by the jumping code in the move method).
     val position: Vector = camera.getPosition
 //    if (position.x < 0) camera.setPositionX(0)
@@ -162,7 +162,7 @@ class Player {
     * @param input the user input
     * @param multiplier
     */
-  def move(input: GameStateInputData, multiplier: Float) {
+  def move(input: GameStateInputData, multiplier: Float): Unit = {
     val previousPosition: Vector = camera.getPosition
     // Movement
     if (input.forward) {
