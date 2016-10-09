@@ -53,10 +53,6 @@ final class GameRenderer @throws[LWJGLException]()
   private var dirtTexture: Texture = null
 
   /**
-    * The number of vertices last uploaded to the VBO.
-    */
-  private var numVerts: Int = 0
-  /**
     * The Chunks currently being rendered by the client.
     */
   val renderedChunkMap: mutable.Map[Long, Int] = mutable.Map()
@@ -67,6 +63,11 @@ final class GameRenderer @throws[LWJGLException]()
     * Vertices to upload to the VBO; maps a VBO Id to the VBO buffer
     */
   val vboStore: mutable.Map[Int, IntBuffer] = mutable.Map()
+
+  /**
+    * Maps a VBO Id to the VBO buffer position (# of vertices)
+    */
+  val vboPosition: mutable.Map[Int, Int] = mutable.Map()
 
   //Display.setResizable(true)
   Display.setDisplayMode(new DisplayMode(DISPLAY_WIDTH, DISPLAY_HEIGHT) )
@@ -105,7 +106,7 @@ final class GameRenderer @throws[LWJGLException]()
     glDisable (GL_STENCIL_TEST)
     glDisable (GL_DITHER)
     glDisable (GL_LIGHTING)
-    // Cross hair and selected block hilighting
+    // Cross hair and selected block highlighting
     glLineWidth (2.0f)
     glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
     // Background colour
@@ -158,8 +159,19 @@ final class GameRenderer @throws[LWJGLException]()
     state.getPlayerView.updateMatrix ()
     // Full brightness for textures
     glColor3b(127.toByte, 127.toByte, 127.toByte)
-    // Start at 1 to avoid drawing 1st degenerate vertex and messing everything else up
-    glDrawArrays (GL_TRIANGLE_STRIP, 1, numVerts)
+
+    vboStore.foreach {
+      case (vboId, vertexData) =>
+        ARBBufferObject.glBindBufferARB(
+          ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, vboId
+        )
+        glVertexPointer(3, GL_INT, vertexDataSize, 0)
+        // Start at 1 to avoid drawing 1st degenerate vertex
+        // and messing everything else up
+        glDrawArrays(GL_TRIANGLE_STRIP, 1, vboPosition(vboId))
+      case _ => println("No VBOs!")
+    }
+
     // Black lines
     glColor3b((-127).toByte, (-127).toByte, (-127).toByte)
     // Draw selected block outline highlight
@@ -234,10 +246,10 @@ final class GameRenderer @throws[LWJGLException]()
     // Bind it
       ARBBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, bufferObjectID)
     // Vertex and texture pointers
-    glVertexPointer (3, GL_INT, vertexDataSize, 0)
-    glTexCoordPointer (2, GL_INT, vertexDataSize, position * sizeOfInt)
-    glEnableClientState (GL_VERTEX_ARRAY)
-    glEnableClientState (GL_TEXTURE_COORD_ARRAY)
+    glVertexPointer(3, GL_INT, vertexDataSize, 0)
+    glTexCoordPointer(2, GL_INT, vertexDataSize, position * sizeOfInt)
+    glEnableClientState(GL_VERTEX_ARRAY)
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY)
     bufferObjectID
   }
 
@@ -317,6 +329,8 @@ final class GameRenderer @throws[LWJGLException]()
               ))
             }
           }
+          vboStore(vboId) = vertexData
+          vboPosition(vboId) = vertexData.position / 5
           vertexData
         case None =>
           println("No chunk to render!")
@@ -338,7 +352,6 @@ final class GameRenderer @throws[LWJGLException]()
           BufferUtils.createIntBuffer(0) // Never reached
       }
     }
-    numVerts = vertexData.position / 5
     vertexData.flip
     // Upload data
     ARBBufferObject.glBufferDataARB(
