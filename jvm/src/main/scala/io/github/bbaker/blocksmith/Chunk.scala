@@ -14,7 +14,10 @@ package io.github.bbaker.blocksmith
 import Chunk._
 import io.github.bbaker.blocksmith.math.Arithmetic._
 import io.github.bbaker.blocksmith.Coordinates.Region2d
-final class Chunk private(val xx: Int, val zz:Int) {
+final class Chunk private(val region2d: Region2d) {
+
+  def xx = region2d.xx
+  def zz = region2d.zz
 
   println(s"Added new chunk at $xx, $zz") // DEBUG
 
@@ -72,5 +75,9 @@ object Chunk{
   val depth = 16
   val height = 16
 
-  def apply(region2d: Region2d) = new Chunk(region2d.xx, region2d.zz)
+  def apply(region2d: Region2d, world: World): Chunk = {
+    val newChunk = new Chunk(region2d)
+    world.setChunkId(newChunk)
+    newChunk
+  }
 }

@@ -20,9 +20,17 @@ import scala.util.control.Breaks._
   * Creates a new GameState with the specified class implementing
   * GamStateListener to listen for state changes.
   *
-  * @param listener the object to receive state change events (usually the renderer)
   */
-final class GameState()(implicit val listener: GameStateListener) {
+final class GameState() {
+
+  /**
+    * the object to receive state change events (usually the renderer)
+    */
+  private var listener: GameStateListener = new GameStateListener {
+    // Dummy listener
+    override def gameStateChunkChanged(chunk: Chunk): Unit =
+      println("GameState not set yet!")
+  }
   /**
     * The one and only Player.
     */
@@ -30,7 +38,7 @@ final class GameState()(implicit val listener: GameStateListener) {
   /**
     * The one and only World... so far.
     */
-  private val world: World = new World()
+  val world: World = new World(listener)
   /**
     * The currently selected block.
     */
@@ -47,7 +55,14 @@ final class GameState()(implicit val listener: GameStateListener) {
     */
   private val ARM_LENGTH: Float = 6
 
-  listener.gameStateChunkChanged(world.startChunk)
+  /**
+    * @param listener the object to receive state change events (usually the renderer)
+    */
+  def setListener(listener: GameStateListener): Unit = {
+    this.listener = listener
+    world.setListener(listener)
+  }
+
 
 
   //TODO: need to somehow render "dirty" chunks, but minimize state tracking. Do it in renderer?
