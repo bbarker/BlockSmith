@@ -39,3 +39,11 @@ Modified work © 2016 Brandon Barker
 BlockSmith is available under the MPL 2.0 License; see [LICENSE](LICENSE.md) for details.
 
 BlockSmith v0.0.1 and earlier is also available under the MIT License; see [LICENSE-Original](LICENSE-Original.md) for details.
+
+## Acknowledgements 
+
+* [Mycraft](https://github.com/bbarker/mycraft) ([Mitchell Kember](https://github.com/mk12)) - providing a very small Java-based voxel game to help bootstrap the project.
+* [TrueCraft](https://truecraft.io/) ([Drew](https://github.com/SirCmpwn) [DeVault](https://drewdevault.com/)) - for providing an implementation of a similar voxel-game in C# that helps serve as a reference and for occasional discussion. 
+* [Minecraft](https://minecraft.net/) ([Notch](https://en.wikipedia.org/wiki/Markus_Persson)) - obviously for making it all possible.
+
+

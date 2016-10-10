@@ -100,6 +100,7 @@ final class GameState() {
     }
   }
 
+  //TODO: also need to check that we can select blocks in neighboring chunks
   /**
     * Calculates {@code selectedBlock} and {@code newBlock}.
     *

@@ -41,6 +41,7 @@ final class GameController() {
     * The renderer for this GameController's state.
     */
   private val renderer: GameRenderer = new GameRenderer()
+  //TODO: use proper observable
   state.setListener(renderer)
 
   /**
