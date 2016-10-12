@@ -27,9 +27,16 @@ lazy val BlockSmith = crossProject.in(file(".")).
     name := "BlockSmith",
     description := "BlockSmith is currently an experiment in the ways of MineCraft.",
     version := "0.1.0-SNAPSHOT",
+    resolvers ++= Seq(
+      "Sonatype OSS Snapshots" at
+        "https://oss.sonatype.org/content/repositories/snapshots",
+      "Sonatype OSS Releases" at
+        "https://oss.sonatype.org/content/repositories/releases"
+    ),
     libraryDependencies ++= Seq(
       "org.specs2" %% "specs2-core" % "3.8.5" % "it,test"
     )
+
   ).
   jvmSettings(
     // Add JVM-specific settings here
@@ -37,14 +44,20 @@ lazy val BlockSmith = crossProject.in(file(".")).
       "org.slick2d" % "slick2d-core" % slickVersion,
 //      "org.lwjgl.lwjgl" % "lwjgl" % lwjglVersion,
 //      "org.lwjgl.lwjgl" % "lwjgl-platform" % lwjglVersion,
-      "org.lwjgl.lwjgl" % "lwjgl_util" % lwjglVersion //FIXME; shouldn't need
-  )).
+        "org.lwjgl.lwjgl" % "lwjgl_util" % lwjglVersion, //FIXME; shouldn't need
+        "io.reactors" %% "reactors" % "0.8-SNAPSHOT",
+        "com.storm-enroute" %% "macrogl" % "0.4-SNAPSHOT"
+)).
   jvmSettings(lwjglSettings: _*).
   jvmConfigure(
     _.enablePlugins(LWJGLPlugin)
   ).
   jsSettings(
     // Add JS-specific settings here
+    libraryDependencies ++= Seq(
+      "io.reactors" %%% "reactors" % "0.8-SNAPSHOT"
+      //"com.storm-enroute" %%% "macrogl" % "0.4-SNAPSHOT"  //FIXME, not available
+    )
   )
 
 lazy val BlockSmithJVM = BlockSmith.jvm
