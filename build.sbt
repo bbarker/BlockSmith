@@ -24,6 +24,7 @@ lazy val BlockSmith = crossProject.in(file(".")).
   configs(IntegrationTest).
   settings(Defaults.itSettings: _*).
   settings(
+    wartremoverWarnings ++= Warts.unsafe,
     name := "BlockSmith",
     description := "BlockSmith is currently an experiment in the ways of MineCraft.",
     version := "0.1.0-SNAPSHOT",
