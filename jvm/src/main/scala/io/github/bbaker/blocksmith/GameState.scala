@@ -42,12 +42,12 @@ final class GameState() {
   /**
     * The currently selected block.
     */
-  private var selectedBlock: Block = null
+  private var selectedBlockOpt: Option[Block] = None
   /**
     * The block of air which will be replaced with a solid block if the Player
     * chooses to.
     */
-  private var newBlock: Block = null
+  private var newBlockOpt: Option[Block] = None
 
   /**
     * The length of the Player's arm; how far away from the Player a block
@@ -86,7 +86,10 @@ final class GameState() {
     // Set selectedBlock and newBlock
     calculateSelectedBlock(chunk)
     // Break or place a block
-    if (selectedBlock != null && newBlock != null) {
+    for {
+      selectedBlock <- selectedBlockOpt
+      newBlock <- newBlockOpt
+    } {
       if (input.breakBlock) {
         chunk.setBlockType(selectedBlock, 0.toByte)
         // Notify the listener
@@ -109,11 +112,10 @@ final class GameState() {
   def calculateSelectedBlock(chunk: Chunk) {
     val position: Vector = player.getCamera.getPosition
     val sight: Vector = player.getCamera.getSight
-    var ray: Vector = null // Vector cast out from the players position to find a block
-    var step: Vector = null // step to increment ray by
-    // Blocks are null unless they become assigned.
-    selectedBlock = null
-    newBlock = null
+    var ray: Vector = Vector() // Vector cast out from the players position to find a block
+    var step: Vector = Vector() // step to increment ray by
+    selectedBlockOpt = None
+    newBlockOpt = None
     // The following works, and is bug-free. That is all.
     // XY plane (front and back faces)
     // Start out assuming the front/back block is very far away so other blocks
@@ -135,11 +137,13 @@ final class GameState() {
           if (distSquared > ARM_LENGTH * ARM_LENGTH) break //todo: remove break
           if (sight.z > 0) {
             if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-              selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+              val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+              selectedBlockOpt = Some(selectedBlock)
               if (selectedBlock.z - 1 >= 0) {
                 println(s"selected new block A in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                newBlock = Block(selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
-                if (chunk.getBlockType(newBlock) != 0) newBlock = null
+                val newBlock =  Block(selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
+                newBlockOpt = Some(newBlock)
+                if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
               }
               frontBackDistSquared = distSquared
               break //todo: remove break
@@ -147,11 +151,13 @@ final class GameState() {
           }
           else {
             if (ray.z - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int] - 1)) != 0) {
-              selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int] - 1)
+              val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int] - 1)
+              selectedBlockOpt = Some(selectedBlock)
               if (selectedBlock.z + 1 < 16) {
                 println(s"selected new block B in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                newBlock = Block(selectedBlock.x, selectedBlock.y, selectedBlock.z + 1)
-                if (chunk.getBlockType(newBlock) != 0) newBlock = null
+                val newBlock = Block(selectedBlock.x, selectedBlock.y, selectedBlock.z + 1)
+                newBlockOpt = Some(newBlock)
+                if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
               }
               frontBackDistSquared = distSquared
               break //todo: remove break
@@ -174,11 +180,13 @@ final class GameState() {
           if (distSquared > ARM_LENGTH * ARM_LENGTH || distSquared > frontBackDistSquared) //break //todo: break is not supported
             if (sight.x > 0) {
               if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-                selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+                val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+                selectedBlockOpt = Some(selectedBlock)
                 if (selectedBlock.x - 1 >= 0) {
                   println(s"selected new block C in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                  newBlock = Block(selectedBlock.x - 1, selectedBlock.y, selectedBlock.z)
-                  if (chunk.getBlockType(newBlock) != 0) newBlock = null
+                  val newBlock = Block(selectedBlock.x - 1, selectedBlock.y, selectedBlock.z)
+                  newBlockOpt = Some(newBlock)
+                  if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
                 }
                 leftRightDistSquared = distSquared
                 break //todo: remove break
@@ -186,11 +194,13 @@ final class GameState() {
             }
             else {
               if (ray.x - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int] - 1, ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-                selectedBlock = Block(ray.x.asInstanceOf[Int] - 1, ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+                val selectedBlock = Block(ray.x.asInstanceOf[Int] - 1, ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+                selectedBlockOpt = Some(selectedBlock)
                 if (selectedBlock.x + 1 < 16) {
                   println(s"selected new block D in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                  newBlock = Block(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
-                  if (chunk.getBlockType(newBlock) != 0) newBlock = null
+                  val newBlock = Block(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
+                  newBlockOpt = Some(newBlock)
+                  if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
                 }
                 leftRightDistSquared = distSquared
                 break //todo: remove break
@@ -217,11 +227,13 @@ final class GameState() {
           ) break //todo: remove break
             if (sight.y > 0) {
               if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-                selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+                val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+                selectedBlockOpt = Some(selectedBlock)
                 if (selectedBlock.y - 1 >= 0) {
                   println(s"selected new block E in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                  newBlock = Block(selectedBlock.x, selectedBlock.y - 1, selectedBlock.z)
-                  if (chunk.getBlockType(newBlock) != 0) newBlock = null
+                  val newBlock = Block(selectedBlock.x, selectedBlock.y - 1, selectedBlock.z)
+                  newBlockOpt = Some(newBlock)
+                  if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
                 }
                 bottomTopDistSquared = distSquared
                 break //todo: remove break
@@ -229,11 +241,13 @@ final class GameState() {
             }
             else {
               if (ray.y - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])) != 0) {
-                selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])
+                val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])
+                selectedBlockOpt = Some(selectedBlock)
                 if (selectedBlock.y + 1 < 16) {
                   println(s"selected new block F in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                  newBlock = Block(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
-                  if (chunk.getBlockType(newBlock) != 0) newBlock = null
+                  val newBlock = Block(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
+                  newBlockOpt = Some(newBlock)
+                  if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
                 }
                 bottomTopDistSquared = distSquared
                 break //todo: remove break
@@ -250,7 +264,7 @@ final class GameState() {
     *
     * @return true if a block is selected
     */
-  def isBlockSelected: Boolean = selectedBlock != null
+  def isBlockSelected: Boolean = selectedBlockOpt.nonEmpty
 
 
   /**
@@ -258,7 +272,7 @@ final class GameState() {
     *
     * @return the block which is selected
     */
-  def getSelectedBlock: Block = selectedBlock
+  def getSelectedBlock: Block = selectedBlockOpt.get
 
 
   /**

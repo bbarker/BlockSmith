@@ -21,10 +21,10 @@ Testing basic arithmetic operations
   //
   // Test positive module
   //
-  val testN1_5 = -1 %+ 5 must_== 4
-  val testN6_5 = -6 %+ 5 must_== 4
-  val test6_5  =  6 %+ 5 must_== 1
-  val test0_5  =  0 %+ 5 must_== 0
+  val testN1_5 = -1 %+ 5 === 4
+  val testN6_5 = -6 %+ 5 === 4
+  val test6_5  =  6 %+ 5 === 1
+  val test0_5  =  0 %+ 5 === 0
   val test6_0  =  6 %+ 0 must throwA[ArithmeticException](message = "/ by zero")
 
 

@@ -141,13 +141,13 @@ final class Vector(/**
   /**
     * Normalizes this Vector (i.e., makes its magnitude equal to 1).
     */
-  def normalize() {
-    val mag: Float = magnitude
-    if (mag == 0) return
-    x /= mag
-    y /= mag
-    z /= mag
-  }
+  def normalize(): Unit =
+    if (magnitude != 0) {
+      x /= magnitude
+      y /= magnitude
+      z /= magnitude
+    }
+
 
   /**
     * Calculates the sum of this Vector and {@code vec}. This does not
