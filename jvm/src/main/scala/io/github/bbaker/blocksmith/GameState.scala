@@ -3,6 +3,7 @@
 package io.github.bbaker.blocksmith
 
 import Coordinates._
+import Vector.vecProjToBlockProj1D
 
 import scala.util.control.Breaks._
 
@@ -130,6 +131,10 @@ final class GameState() {
     def twoFaceCheck(pj: VectorProj1D): Unit = {
       // TODO: we are doing this based on the Y  template
       if (pj(sight) != 0) {
+        val xInd: Int = if (pj == VectorX) 1 else 0
+        val yInd: Int = if (pj == VectorY) 1 else 0
+        val zInd: Int = if (pj == VectorZ) 1 else 0
+
         // Vector cast out from the players position to find a block
         val ray: Vector =
         if (pj(sight) > 0) position.plus(sight.scaled((Math.ceil(pj(position)) - pj(position)).asInstanceOf[Float] / pj(sight)))
@@ -137,9 +142,7 @@ final class GameState() {
         // step to increment ray by
         val step: Vector  = sight.scaled(Math.abs(1.0f / pj(sight)))
         if (pj(ray) == 16) ray.add(step)
-
         val distSquared: Float = ray.minus(position).magnitudeSquared
-
         def rayDistMaxReached: Boolean = pj match {
           case VectorX =>
             distSquared > ARM_LENGTH * ARM_LENGTH ||
@@ -151,35 +154,40 @@ final class GameState() {
           case VectorZ =>
             distSquared > ARM_LENGTH * ARM_LENGTH
         }
+        val updateDistSq: Float => Unit = pj match {
+          case VectorX => (dSq: Float) => {leftRightDistSquared = dSq}
+          case VectorY => (dSq: Float) => {bottomTopDistSquared = dSq}
+          case VectorZ => (dSq: Float) => {frontBackDistSquared = dSq}
+        }
 
         breakable {
           while (ray.x >= 0 && ray.x < 16 && ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16) {
             if (rayDistMaxReached) break //todo: remove break
-            if (sight.y > 0) {
+            if (pj(sight) > 0) {
               if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
                 val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
                 selectedBlockOpt = Some(selectedBlock)
-                if (selectedBlock.y - 1 >= 0) {
+                if (pj(selectedBlock) - 1 >= 0) {
                   println(s"selected new block E in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                  val newBlock = Block(selectedBlock.x, selectedBlock.y - 1, selectedBlock.z)
+                  val newBlock = Block(selectedBlock.x - xInd, selectedBlock.y - yInd, selectedBlock.z - zInd)
                   newBlockOpt = Some(newBlock)
                   if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
                 }
-                bottomTopDistSquared = distSquared
+                updateDistSq(distSquared)
                 break //todo: remove break
               }
             }
             else {
-              if (ray.y - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])) != 0) {
-                val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])
+              if (pj(ray) - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])) != 0) {
+                val selectedBlock = Block(ray.x.asInstanceOf[Int] - xInd, ray.y.asInstanceOf[Int] - yInd, ray.z.asInstanceOf[Int] - zInd)
                 selectedBlockOpt = Some(selectedBlock)
-                if (selectedBlock.y + 1 < 16) {
+                if (pj(selectedBlock) + 1 < 16) {
                   println(s"selected new block F in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                  val newBlock = Block(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
+                  val newBlock = Block(selectedBlock.x + xInd, selectedBlock.y + yInd, selectedBlock.z + zInd)
                   newBlockOpt = Some(newBlock)
                   if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
                 }
-                bottomTopDistSquared = distSquared
+                updateDistSq(distSquared)
                 break //todo: remove break
               }
             }
@@ -189,140 +197,12 @@ final class GameState() {
       }
     }
 
-    // frontBackDistSquared
-    if (selectedBlockOpt.isEmpty && sight.z != 0) {
-      // Calculate ray and step depending on look direction
-      if (sight.z > 0) ray = position.plus(sight.scaled((Math.ceil(position.z) - position.z).asInstanceOf[Float] / sight.z))
-      else ray = position.plus(sight.scaled((Math.floor(position.z) - position.z).asInstanceOf[Float] / sight.z))
-      step = sight.scaled(Math.abs(1.0f / sight.z))
-      // Do the first step already if z == 16 to prevent an ArrayIndexOutOfBoundsException
-      if (ray.z == 16) ray.add(step)
-      breakable {
-        while (ray.x >= 0 && ray.x < 16 && ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16) {
-
-          // Give up if we've extended the ray longer than the Player's arm length
-          val distSquared: Float = ray.minus(position).magnitudeSquared
-          if (distSquared > ARM_LENGTH * ARM_LENGTH) break //todo: remove break
-          if (sight.z > 0) {
-            if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-              val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
-              selectedBlockOpt = Some(selectedBlock)
-              if (selectedBlock.z - 1 >= 0) {
-                println(s"selected new block A in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                val newBlock =  Block(selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
-                newBlockOpt = Some(newBlock)
-                if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
-              }
-              frontBackDistSquared = distSquared
-              break //todo: remove break
-            }
-          }
-          else {
-            if (ray.z - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int] - 1)) != 0) {
-              val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int] - 1)
-              selectedBlockOpt = Some(selectedBlock)
-              if (selectedBlock.z + 1 < 16) {
-                println(s"selected new block B in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                val newBlock = Block(selectedBlock.x, selectedBlock.y, selectedBlock.z + 1)
-                newBlockOpt = Some(newBlock)
-                if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
-              }
-              frontBackDistSquared = distSquared
-              break //todo: remove break
-            }
-          }
-          ray.add(step)
-        }
-      }
-    }
+    // XY plane (left and right faces); frontBackDistSquared
+    if (selectedBlockOpt.isEmpty && sight.z != 0) twoFaceCheck(VectorZ)
     // YZ plane (left and right faces); leftRightDistSquared
-    if (selectedBlockOpt.isEmpty && sight.x != 0) {
-      if (sight.x > 0) ray = position.plus(sight.scaled((Math.ceil(position.x) - position.x).asInstanceOf[Float] / sight.x))
-      else ray = position.plus(sight.scaled((Math.floor(position.x) - position.x).asInstanceOf[Float] / sight.x))
-      step = sight.scaled(Math.abs(1.0f / sight.x))
-      if (ray.x == 16) ray.add(step)
-      breakable {
-        while (ray.x >= 0 && ray.x < 16 && ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16) {
-          val distSquared: Float = ray.minus(position).magnitudeSquared
-          if (distSquared > ARM_LENGTH * ARM_LENGTH || distSquared > frontBackDistSquared) break //todo: break is not supported
-            if (sight.x > 0) {
-              if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-                val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
-                selectedBlockOpt = Some(selectedBlock)
-                if (selectedBlock.x - 1 >= 0) {
-                  println(s"selected new block C in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                  val newBlock = Block(selectedBlock.x - 1, selectedBlock.y, selectedBlock.z)
-                  newBlockOpt = Some(newBlock)
-                  if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
-                }
-                leftRightDistSquared = distSquared
-                break //todo: remove break
-              }
-            }
-            else {
-              if (ray.x - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int] - 1, ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-                val selectedBlock = Block(ray.x.asInstanceOf[Int] - 1, ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
-                selectedBlockOpt = Some(selectedBlock)
-                if (selectedBlock.x + 1 < 16) {
-                  println(s"selected new block D in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                  val newBlock = Block(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
-                  newBlockOpt = Some(newBlock)
-                  if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
-                }
-                leftRightDistSquared = distSquared
-                break //todo: remove break
-              }
-            }
-          ray.add(step)
-
-        }
-      }
-    }
+    if (selectedBlockOpt.isEmpty && sight.x != 0) twoFaceCheck(VectorX)
     // XZ plane (bottom and top faces); bottomTopDistSquared
-    if (selectedBlockOpt.isEmpty && sight.y != 0) {
-      if (sight.y > 0) ray = position.plus(sight.scaled((Math.ceil(position.y) - position.y).asInstanceOf[Float] / sight.y))
-      else ray = position.plus(sight.scaled((Math.floor(position.y) - position.y).asInstanceOf[Float] / sight.y))
-      step = sight.scaled(Math.abs(1.0f / sight.y))
-      if (ray.y == 16) ray.add(step)
-      breakable {
-        while (ray.x >= 0 && ray.x < 16 && ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16) {
-          val distSquared: Float = ray.minus(position).magnitudeSquared
-          if (distSquared > ARM_LENGTH * ARM_LENGTH ||
-            distSquared > frontBackDistSquared ||
-            distSquared > leftRightDistSquared
-          ) break //todo: remove break
-            if (sight.y > 0) {
-              if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-                val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
-                selectedBlockOpt = Some(selectedBlock)
-                if (selectedBlock.y - 1 >= 0) {
-                  println(s"selected new block E in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                  val newBlock = Block(selectedBlock.x, selectedBlock.y - 1, selectedBlock.z)
-                  newBlockOpt = Some(newBlock)
-                  if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
-                }
-                bottomTopDistSquared = distSquared
-                break //todo: remove break
-              }
-            }
-            else {
-              if (ray.y - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])) != 0) {
-                val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])
-                selectedBlockOpt = Some(selectedBlock)
-                if (selectedBlock.y + 1 < 16) {
-                  println(s"selected new block F in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                  val newBlock = Block(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
-                  newBlockOpt = Some(newBlock)
-                  if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
-                }
-                bottomTopDistSquared = distSquared
-                break //todo: remove break
-              }
-            }
-          ray.add(step)
-        }
-      }
-    }
+    if (selectedBlockOpt.isEmpty && sight.y != 0) twoFaceCheck(VectorY)
   }
 
 

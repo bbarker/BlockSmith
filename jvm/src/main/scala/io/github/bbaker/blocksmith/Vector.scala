@@ -53,6 +53,14 @@ object Vector {
         (-nAxis.y * vec.x + nAxis.x * vec.y) * s
     )
   }
+
+  //TODO: Temporary, remove when Block extends Vector generically
+  implicit def vecProjToBlockProj1D(vPj: VectorProj1D): BlockProj1D = vPj match {
+    case VectorX => BlockX
+    case VectorY => BlockY
+    case VectorZ => BlockZ
+  }
+
 }
 
 //
