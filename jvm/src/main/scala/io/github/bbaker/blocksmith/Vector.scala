@@ -55,6 +55,25 @@ object Vector {
   }
 }
 
+//
+// Projection objects
+//
+sealed trait VectorProj
+sealed trait VectorProj1D extends VectorProj {
+  def apply(vec: Vector): Float
+}
+case object VectorX extends VectorProj1D {
+  def apply(vec: Vector): Float = vec.x
+}
+object VectorY extends VectorProj1D {
+  def apply(vec: Vector): Float = vec.y
+}
+object VectorZ extends VectorProj1D {
+  def apply(vec: Vector): Float = vec.z
+}
+
+
+
 final class Vector(/**
      * The X component of this Vector.
      */

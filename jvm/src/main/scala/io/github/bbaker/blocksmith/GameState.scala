@@ -13,6 +13,10 @@ import scala.util.control.Breaks._
   *
   * @author Mitchell Kember
   * @since 07/12/2011
+  *
+  * @author Brandon Elam Barker
+  * @since 10/15/2016
+  *
   */
 
 
@@ -112,8 +116,6 @@ final class GameState() {
   def calculateSelectedBlock(chunk: Chunk) {
     val position: Vector = player.getCamera.getPosition
     val sight: Vector = player.getCamera.getSight
-    var ray: Vector = Vector() // Vector cast out from the players position to find a block
-    var step: Vector = Vector() // step to increment ray by
     selectedBlockOpt = None
     newBlockOpt = None
     // The following works, and is bug-free. That is all.
@@ -122,7 +124,73 @@ final class GameState() {
     // will be chosen first, if there is no block found (if z == 0 or the ray leaves
     // its confines.
     var frontBackDistSquared: Float = Float.MaxValue
-    if (sight.z != 0) {
+    var leftRightDistSquared: Float = Float.MaxValue
+    var bottomTopDistSquared: Float = Float.MaxValue
+
+    def twoFaceCheck(pj: VectorProj1D): Unit = {
+      // TODO: we are doing this based on the Y  template
+      if (pj(sight) != 0) {
+        // Vector cast out from the players position to find a block
+        val ray: Vector =
+        if (pj(sight) > 0) position.plus(sight.scaled((Math.ceil(pj(position)) - pj(position)).asInstanceOf[Float] / pj(sight)))
+        else position.plus(sight.scaled((Math.floor(pj(position)) - pj(position)).asInstanceOf[Float] / pj(sight)))
+        // step to increment ray by
+        val step: Vector  = sight.scaled(Math.abs(1.0f / pj(sight)))
+        if (pj(ray) == 16) ray.add(step)
+
+        val distSquared: Float = ray.minus(position).magnitudeSquared
+
+        def rayDistMaxReached: Boolean = pj match {
+          case VectorX =>
+            distSquared > ARM_LENGTH * ARM_LENGTH ||
+              distSquared > frontBackDistSquared
+          case VectorY =>
+            distSquared > ARM_LENGTH * ARM_LENGTH ||
+              distSquared > frontBackDistSquared ||
+              distSquared > leftRightDistSquared
+          case VectorZ =>
+            distSquared > ARM_LENGTH * ARM_LENGTH
+        }
+
+        breakable {
+          while (ray.x >= 0 && ray.x < 16 && ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16) {
+            if (rayDistMaxReached) break //todo: remove break
+            if (sight.y > 0) {
+              if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
+                val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+                selectedBlockOpt = Some(selectedBlock)
+                if (selectedBlock.y - 1 >= 0) {
+                  println(s"selected new block E in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
+                  val newBlock = Block(selectedBlock.x, selectedBlock.y - 1, selectedBlock.z)
+                  newBlockOpt = Some(newBlock)
+                  if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
+                }
+                bottomTopDistSquared = distSquared
+                break //todo: remove break
+              }
+            }
+            else {
+              if (ray.y - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])) != 0) {
+                val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])
+                selectedBlockOpt = Some(selectedBlock)
+                if (selectedBlock.y + 1 < 16) {
+                  println(s"selected new block F in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
+                  val newBlock = Block(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
+                  newBlockOpt = Some(newBlock)
+                  if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
+                }
+                bottomTopDistSquared = distSquared
+                break //todo: remove break
+              }
+            }
+            ray.add(step)
+          }
+        }
+      }
+    }
+
+    // frontBackDistSquared
+    if (selectedBlockOpt.isEmpty && sight.z != 0) {
       // Calculate ray and step depending on look direction
       if (sight.z > 0) ray = position.plus(sight.scaled((Math.ceil(position.z) - position.z).asInstanceOf[Float] / sight.z))
       else ray = position.plus(sight.scaled((Math.floor(position.z) - position.z).asInstanceOf[Float] / sight.z))
@@ -167,9 +235,8 @@ final class GameState() {
         }
       }
     }
-    // YZ plane (left and right faces)
-    var leftRightDistSquared: Float = Float.MaxValue
-    if (sight.x != 0) {
+    // YZ plane (left and right faces); leftRightDistSquared
+    if (selectedBlockOpt.isEmpty && sight.x != 0) {
       if (sight.x > 0) ray = position.plus(sight.scaled((Math.ceil(position.x) - position.x).asInstanceOf[Float] / sight.x))
       else ray = position.plus(sight.scaled((Math.floor(position.x) - position.x).asInstanceOf[Float] / sight.x))
       step = sight.scaled(Math.abs(1.0f / sight.x))
@@ -177,7 +244,7 @@ final class GameState() {
       breakable {
         while (ray.x >= 0 && ray.x < 16 && ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16) {
           val distSquared: Float = ray.minus(position).magnitudeSquared
-          if (distSquared > ARM_LENGTH * ARM_LENGTH || distSquared > frontBackDistSquared) //break //todo: break is not supported
+          if (distSquared > ARM_LENGTH * ARM_LENGTH || distSquared > frontBackDistSquared) break //todo: break is not supported
             if (sight.x > 0) {
               if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
                 val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
@@ -211,9 +278,8 @@ final class GameState() {
         }
       }
     }
-    // XZ plane (bottom and top faces)
-    var bottomTopDistSquared: Float = Float.MaxValue
-    if (sight.y != 0) {
+    // XZ plane (bottom and top faces); bottomTopDistSquared
+    if (selectedBlockOpt.isEmpty && sight.y != 0) {
       if (sight.y > 0) ray = position.plus(sight.scaled((Math.ceil(position.y) - position.y).asInstanceOf[Float] / sight.y))
       else ray = position.plus(sight.scaled((Math.floor(position.y) - position.y).asInstanceOf[Float] / sight.y))
       step = sight.scaled(Math.abs(1.0f / sight.y))
@@ -258,6 +324,8 @@ final class GameState() {
       }
     }
   }
+
+
 
   /**
     * Determines whether a block is currently selected or not.
