@@ -263,7 +263,7 @@ final class GameRenderer @throws[LWJGLException]()
     * @return the vertices in interleaved XYZST format
     */
   private def cubeData(x: Int, y: Int, z: Int): Array[Int] = Array[Int](
-    // 23*5 ints
+    // 23*5 ints (x,y,z, u,v)
     x, y, z, 0, 0, // degenerate
 
     x, y, z, 1, 0,

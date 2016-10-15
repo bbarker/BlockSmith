@@ -1,6 +1,6 @@
 import LWJGLPlugin._
 
-name := "BlockSmith root project"
+name := "BlockSmith"
 
 scalaVersion in ThisBuild := "2.11.8"
 
@@ -26,7 +26,7 @@ lazy val BlockSmith = crossProject.in(file(".")).
   settings(
     wartremoverWarnings ++= Warts.unsafe,
     wartremoverErrors ++= Seq(Wart.Return),
-    name := "BlockSmith",
+    name := "BlockSmith cross project",
     description := "BlockSmith is currently an experiment in the ways of MineCraft.",
     version := "0.1.0-SNAPSHOT",
     resolvers ++= Seq(

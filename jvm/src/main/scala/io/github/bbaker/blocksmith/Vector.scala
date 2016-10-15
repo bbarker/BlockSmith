@@ -53,7 +53,34 @@ object Vector {
         (-nAxis.y * vec.x + nAxis.x * vec.y) * s
     )
   }
+
+  //TODO: Temporary, remove when Block extends Vector generically
+  implicit def vecProjToBlockProj1D(vPj: VectorProj1D): BlockProj1D = vPj match {
+    case VectorX => BlockX
+    case VectorY => BlockY
+    case VectorZ => BlockZ
+  }
+
 }
+
+//
+// Projection objects
+//
+sealed trait VectorProj
+sealed trait VectorProj1D extends VectorProj {
+  def apply(vec: Vector): Float
+}
+case object VectorX extends VectorProj1D {
+  def apply(vec: Vector): Float = vec.x
+}
+object VectorY extends VectorProj1D {
+  def apply(vec: Vector): Float = vec.y
+}
+object VectorZ extends VectorProj1D {
+  def apply(vec: Vector): Float = vec.z
+}
+
+
 
 final class Vector(/**
      * The X component of this Vector.
@@ -104,6 +131,8 @@ final class Vector(/**
     z += vec.z
   }
 
+  def +(vec: Vector): Vector = Vector(x + vec.x, y + vec.y, z + vec.z)
+
   /**
     * Subtracts {@code vec} from this Vector by subtracting each
     * component separately.
@@ -115,6 +144,9 @@ final class Vector(/**
     y -= vec.y
     z -= vec.z
   }
+
+  def -(vec: Vector): Vector = Vector(x - vec.x, y - vec.y, z - vec.z)
+
 
   /**
     * Scales this vector by the scalar value {@code s} by multiplying
