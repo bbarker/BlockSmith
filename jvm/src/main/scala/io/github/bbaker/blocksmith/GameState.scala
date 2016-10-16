@@ -187,7 +187,7 @@ final class GameState() {
               }
             }
             else {
-              if (pj(ray) - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int] - 1, ray.z.asInstanceOf[Int])) != 0) {
+              if (pj(ray) - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int] - xInd, ray.y.asInstanceOf[Int] - yInd, ray.z.asInstanceOf[Int] - zInd)) != 0) {
                 val selectedBlock = Block(ray.x.asInstanceOf[Int] - xInd, ray.y.asInstanceOf[Int] - yInd, ray.z.asInstanceOf[Int] - zInd)
                 selectedBlockOpt = Some(selectedBlock)
                 if (pj(selectedBlock) + 1 < 16) {
