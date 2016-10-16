@@ -209,11 +209,11 @@ final class GameState() {
     }
 
     // XY plane (left and right faces); frontBackDistSquared
-    if (selectedBlockOpt.isEmpty && sight.z != 0) twoFaceCheck(VectorZ)
+    if (sight.z != 0) twoFaceCheck(VectorZ)
     // YZ plane (left and right faces); leftRightDistSquared
-    if (selectedBlockOpt.isEmpty && sight.x != 0) twoFaceCheck(VectorX)
+    if (sight.x != 0) twoFaceCheck(VectorX)
     // XZ plane (bottom and top faces); bottomTopDistSquared
-    if (selectedBlockOpt.isEmpty && sight.y != 0) twoFaceCheck(VectorY)
+    if (sight.y != 0) twoFaceCheck(VectorY)
   }
 
 
