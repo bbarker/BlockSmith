@@ -201,7 +201,7 @@ final class GameState() {
                 //break  //todo: remove break
               }
             }
-          }).takeWhile(_ => selectedBlockOpt.isEmpty)
+          }).takeWhile(_ => selectedBlockOpt.isEmpty).toList 
           println("end for")
 
         }
