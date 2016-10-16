@@ -131,6 +131,8 @@ final class Vector(/**
     z += vec.z
   }
 
+  def +(vec: Vector): Vector = Vector(x + vec.x, y + vec.y, z + vec.z)
+
   /**
     * Subtracts {@code vec} from this Vector by subtracting each
     * component separately.

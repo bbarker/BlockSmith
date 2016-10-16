@@ -129,6 +129,8 @@ final class GameState() {
     var bottomTopDistSquared: Float = Float.MaxValue
 
     def twoFaceCheck(pj: VectorProj1D): Unit = {
+      def step = sight.scaled(Math.abs(1.0f / pj(sight)))
+
       // TODO: we are doing this based on the Y  template
       if (pj(sight) != 0) {
         val xInd: Int = if (pj == VectorX) 1 else 0
@@ -136,23 +138,24 @@ final class GameState() {
         val zInd: Int = if (pj == VectorZ) 1 else 0
 
         // Vector cast out from the players position to find a block
-        val ray: Vector =
+        val rayInit: Vector =
         if (pj(sight) > 0) position.plus(sight.scaled((Math.ceil(pj(position)) - pj(position)).asInstanceOf[Float] / pj(sight)))
         else position.plus(sight.scaled((Math.floor(pj(position)) - pj(position)).asInstanceOf[Float] / pj(sight)))
-        // step to increment ray by
-        val step: Vector  = sight.scaled(Math.abs(1.0f / pj(sight)))
-        if (pj(ray) == 16) ray.add(step)
-        val distSquared: Float = ray.minus(position).magnitudeSquared
-        def rayDistMaxReached: Boolean = pj match {
-          case VectorX =>
-            distSquared > ARM_LENGTH * ARM_LENGTH ||
-              distSquared > frontBackDistSquared
-          case VectorY =>
-            distSquared > ARM_LENGTH * ARM_LENGTH ||
-              distSquared > frontBackDistSquared ||
-              distSquared > leftRightDistSquared
-          case VectorZ =>
-            distSquared > ARM_LENGTH * ARM_LENGTH
+        if (pj(rayInit) == 16) rayInit.add(step) //TODO: WHY?
+        def distSquared(ray: Vector): Float = ray.minus(position).magnitudeSquared
+        def rayDistMaxReached(ray: Vector): Boolean = {
+          val dSq = distSquared(ray)
+          pj match {
+            case VectorX =>
+              dSq > ARM_LENGTH * ARM_LENGTH ||
+                dSq > frontBackDistSquared
+            case VectorY =>
+              dSq > ARM_LENGTH * ARM_LENGTH ||
+                dSq > frontBackDistSquared ||
+                dSq > leftRightDistSquared
+            case VectorZ =>
+              dSq > ARM_LENGTH * ARM_LENGTH
+          }
         }
         val updateDistSq: Float => Unit = pj match {
           case VectorX => (dSq: Float) => {leftRightDistSquared = dSq}
@@ -161,8 +164,13 @@ final class GameState() {
         }
 
         breakable {
-          while (ray.x >= 0 && ray.x < 16 && ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16) {
-            if (rayDistMaxReached) break //todo: remove break
+          println("before while")
+          // step to increment ray by
+          lazy val rays: Stream[Vector] = rayInit #:: rays.map(_ + step)
+          (for (ray <- rays.takeWhile(!rayDistMaxReached(_))
+               if ray.x >= 0 && ray.x < 16 && ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16)
+          yield {
+            println(s"ray ${ray.x}, ${ray.y}, ${ray.z}")
             if (pj(sight) > 0) {
               if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
                 val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
@@ -173,8 +181,9 @@ final class GameState() {
                   newBlockOpt = Some(newBlock)
                   if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
                 }
-                updateDistSq(distSquared)
-                break //todo: remove break
+                updateDistSq(distSquared(ray))
+                println("break test 2")
+                //break  //todo: remove break
               }
             }
             else {
@@ -187,12 +196,14 @@ final class GameState() {
                   newBlockOpt = Some(newBlock)
                   if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
                 }
-                updateDistSq(distSquared)
-                break //todo: remove break
+                updateDistSq(distSquared(ray))
+                println("break test 3")
+                //break  //todo: remove break
               }
             }
-            ray.add(step)
-          }
+          }).takeWhile(_ => selectedBlockOpt.isEmpty)
+          println("end for")
+
         }
       }
     }
