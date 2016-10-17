@@ -129,7 +129,7 @@ final class GameState() {
     var bottomTopDistSquared: Float = Float.MaxValue
 
     def twoFaceCheck(pj: VectorProj1D): Unit = {
-      def step = sight.scaled(Math.abs(1.0f / pj(sight)))
+      val step = sight.scaled(Math.abs(1.0f / pj(sight)))
 
       // TODO: we are doing this based on the Y  template
       if (pj(sight) != 0) {
@@ -142,6 +142,7 @@ final class GameState() {
         if (pj(sight) > 0) position.plus(sight.scaled((Math.ceil(pj(position)) - pj(position)).asInstanceOf[Float] / pj(sight)))
         else position.plus(sight.scaled((Math.floor(pj(position)) - pj(position)).asInstanceOf[Float] / pj(sight)))
         if (pj(rayInit) == 16) rayInit.add(step) //TODO: WHY?
+
         def distSquared(ray: Vector): Float = ray.minus(position).magnitudeSquared
         def rayDistMaxReached(ray: Vector): Boolean = {
           val dSq = distSquared(ray)
@@ -168,8 +169,10 @@ final class GameState() {
           // step to increment ray by
           lazy val rays: Stream[Vector] = rayInit #:: rays.map(_ + step)
           (for (ray <- rays.takeWhile(!rayDistMaxReached(_))
-               if ray.x >= 0 && ray.x < 16 && ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16)
+               if selectedBlockOpt.isEmpty && ray.x >= 0 && ray.x < 16 &&
+                 ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16)
           yield {
+            ray.sub(step) // FIXME: this is a hack fix
             println(s"ray ${ray.x}, ${ray.y}, ${ray.z}")
             if (pj(sight) > 0) {
               if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
@@ -201,7 +204,7 @@ final class GameState() {
                 //break  //todo: remove break
               }
             }
-          }).takeWhile(_ => selectedBlockOpt.isEmpty).toList 
+          }).toList
           println("end for")
 
         }

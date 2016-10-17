@@ -145,6 +145,9 @@ final class Vector(/**
     z -= vec.z
   }
 
+  def -(vec: Vector): Vector = Vector(x - vec.x, y - vec.y, z - vec.z)
+
+
   /**
     * Scales this vector by the scalar value {@code s} by multiplying
     * each component separately.
