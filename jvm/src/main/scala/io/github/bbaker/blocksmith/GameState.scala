@@ -165,14 +165,14 @@ final class GameState() {
         }
 
         breakable {
-          println("before while")
+          println(s"before while: rayInit: ${rayInit.x}, ${rayInit.y}, ${rayInit.z}")
           // step to increment ray by
           lazy val rays: Stream[Vector] = rayInit #:: rays.map(_ + step)
           (for (ray <- rays.takeWhile(!rayDistMaxReached(_))
                if selectedBlockOpt.isEmpty && ray.x >= 0 && ray.x < 16 &&
                  ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16)
           yield {
-            ray.sub(step) // FIXME: this is a hack fix
+            //ray.sub(step) // FIXME: this is a hack fix
             println(s"ray ${ray.x}, ${ray.y}, ${ray.z}")
             if (pj(sight) > 0) {
               if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
