@@ -168,7 +168,6 @@ final class GameState() {
              if ray.x >= 0 && ray.x < 16 &&
                ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16)
         yield {
-          println(s"ray ${ray.x}, ${ray.y}, ${ray.z}")
           if (pj(sight) > 0) {
             if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
               val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
@@ -196,9 +195,11 @@ final class GameState() {
             }
           }
         }).toList
-
       }
     }
+
+    // Note that having a selected block does NOT mean we have selected the
+    // correct block and can immediately terminate
 
     // XY plane (left and right faces); frontBackDistSquared
     if (sight.z != 0) twoFaceCheck(VectorZ)
