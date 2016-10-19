@@ -75,13 +75,13 @@ final class GameRenderer @throws[LWJGLException]()
   Display.setTitle(WINDOW_TITLE)
   // Try using oversampling for smooth edges.
   try {
-    Display.create (new PixelFormat(0, DEPTH_BUFFER_BITS, 0, DESIRED_SAMPLES) )
+    Display.create(new PixelFormat(0, DEPTH_BUFFER_BITS, 0, DESIRED_SAMPLES) )
   }
   catch {
     case lwjgle: LWJGLException =>
       // Replace this with text on screen
       println("Could not enable anti-aliasing. Brace yourself for jaggies.")
-      Display.create (new PixelFormat(0, DEPTH_BUFFER_BITS, 0, 0) )
+      Display.create(new PixelFormat(0, DEPTH_BUFFER_BITS, 0, 0) )
   }
 
   // Get ready
@@ -95,22 +95,22 @@ final class GameRenderer @throws[LWJGLException]()
     */
   private def prepareOpenGL(): Unit = {
     if (! GLContext.getCapabilities.GL_ARB_vertex_buffer_object) {
-      BlockSmith.LOGGER.log (Level.SEVERE, "GL_ARB_vertex_buffer_object not supported.")
-      throw new LWJGLException ("GL_ARB_vertex_buffer_object not supported")
+      BlockSmith.LOGGER.log(Level.SEVERE, "GL_ARB_vertex_buffer_object not supported.")
+      throw new LWJGLException("GL_ARB_vertex_buffer_object not supported")
     }
-    glEnable (GL_CULL_FACE) // back face culling
-    glEnable (GL_DEPTH_TEST) // z-buffer
-    glEnable (GL_TEXTURE_2D) // textures
+    glEnable(GL_CULL_FACE) // back face culling
+    glEnable(GL_DEPTH_TEST) // z-buffer
+    glEnable(GL_TEXTURE_2D) // textures
     // We don't need these
-    glDisable (GL_ALPHA_TEST)
-    glDisable (GL_STENCIL_TEST)
-    glDisable (GL_DITHER)
-    glDisable (GL_LIGHTING)
+    glDisable(GL_ALPHA_TEST)
+    glDisable(GL_STENCIL_TEST)
+    glDisable(GL_DITHER)
+    glDisable(GL_LIGHTING)
     // Cross hair and selected block highlighting
-    glLineWidth (2.0f)
-    glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
+    glLineWidth(2.0f)
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
     // Background colour
-    glClearColor (0.8f, 0.9f, 1.0f, 0.0f)
+    glClearColor(0.8f, 0.9f, 1.0f, 0.0f)
   }
 
   /**
@@ -147,7 +147,7 @@ final class GameRenderer @throws[LWJGLException]()
     // Clear colour and z buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     // Load the identity matrix
-    glLoadIdentity ()
+    glLoadIdentity()
     //
     //FIXME: this block isn't working
 //    if (Display.wasResized()) {
@@ -156,9 +156,9 @@ final class GameRenderer @throws[LWJGLException]()
 //      testResizeOpenGL()
 //    }
     // Let the Camera calculate the view matrix
-    state.getPlayerView.updateMatrix ()
+    state.getPlayerView.updateMatrix()
     // Full brightness for textures
-    glColor3b(127.toByte, 127.toByte, 127.toByte)
+    glColor3b(127, 127, 127)
 
     vboStore.foreach {
       case (vboId, vertexData) =>
@@ -173,44 +173,44 @@ final class GameRenderer @throws[LWJGLException]()
     }
 
     // Black lines
-    glColor3b((-127).toByte, (-127).toByte, (-127).toByte)
+    glColor3b(-127, -127, -127)
     // Draw selected block outline highlight
     if (state.isBlockSelected) {
       val selectedBlock: Vector = GameRenderer.openGLCoordinatesForBlock (state.getSelectedBlock)
       // Just use immediate mode/fixed function pipeline
-      glBegin (GL_LINE_STRIP)
-      glVertex3f (selectedBlock.x, selectedBlock.y, selectedBlock.z)
-      glVertex3f (selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
-      glVertex3f (selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z)
-      glVertex3f (selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
-      glVertex3f (selectedBlock.x, selectedBlock.y, selectedBlock.z)
-      glVertex3f (selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
-      glVertex3f (selectedBlock.x + 1, selectedBlock.y, selectedBlock.z - 1)
-      glVertex3f (selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z - 1)
-      glVertex3f (selectedBlock.x, selectedBlock.y + 1, selectedBlock.z - 1)
-      glVertex3f (selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
-      glEnd ()
-      glBegin (GL_LINES)
-      glVertex3f (selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
-      glVertex3f (selectedBlock.x, selectedBlock.y + 1, selectedBlock.z - 1)
-      glVertex3f (selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z)
-      glVertex3f (selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z - 1)
-      glVertex3f (selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
-      glVertex3f (selectedBlock.x + 1, selectedBlock.y, selectedBlock.z - 1)
-      glEnd ()
+      glBegin(GL_LINE_STRIP)
+      glVertex3f(selectedBlock.x, selectedBlock.y, selectedBlock.z)
+      glVertex3f(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
+      glVertex3f(selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z)
+      glVertex3f(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
+      glVertex3f(selectedBlock.x, selectedBlock.y, selectedBlock.z)
+      glVertex3f(selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
+      glVertex3f(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z - 1)
+      glVertex3f(selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z - 1)
+      glVertex3f(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z - 1)
+      glVertex3f(selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
+      glEnd()
+      glBegin(GL_LINES)
+      glVertex3f(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
+      glVertex3f(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z - 1)
+      glVertex3f(selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z)
+      glVertex3f(selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z - 1)
+      glVertex3f(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
+      glVertex3f(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z - 1)
+      glEnd()
     }
     // Reload identity matrix
-    glLoadIdentity ()
+    glLoadIdentity()
     // Draw crosshair
-    glBegin (GL_LINES)
-    glVertex3f (- CROSSHAIR_SIZE / 2, 0, - 0.25f)
-    glVertex3f (CROSSHAIR_SIZE / 2, 0, - 0.25f)
-    glVertex3f (0, - CROSSHAIR_SIZE / 2, - 0.25f)
-    glVertex3f (0, CROSSHAIR_SIZE / 2, - 0.25f)
-    glEnd ()
+    glBegin(GL_LINES)
+    glVertex3f(- CROSSHAIR_SIZE / 2, 0, - 0.25f)
+    glVertex3f(CROSSHAIR_SIZE / 2, 0, - 0.25f)
+    glVertex3f(0, - CROSSHAIR_SIZE / 2, - 0.25f)
+    glVertex3f(0, CROSSHAIR_SIZE / 2, - 0.25f)
+    glEnd()
     // Update
-    Display.update ()
-    Display.sync (60)
+    Display.update()
+    Display.sync(60)
   }
 
   /**
@@ -218,15 +218,15 @@ final class GameRenderer @throws[LWJGLException]()
     */
   private def loadTextures(): Unit = {
     try {
-      dirtTexture = TextureLoader.getTexture ("PNG", ResourceLoader.getResourceAsStream ("res/dirt.png") )
+      dirtTexture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("res/dirt.png") )
     }
     catch {
       case ioe: IOException =>
-      BlockSmith.LOGGER.log (Level.WARNING, ioe.toString, ioe)
+      BlockSmith.LOGGER.log(Level.WARNING, ioe.toString, ioe)
     }
     // Texture parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-    // Minecraft! (try using GL_LINEAR and you'll see what I mean):
+    // Minecraft!(try using GL_LINEAR and you'll see what I mean):
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
@@ -254,7 +254,7 @@ final class GameRenderer @throws[LWJGLException]()
   }
 
   /**
-    * Calculates vertices for a cube located at ({@code x}, {@code y}, {@code z}).
+    * Calculates vertices for a cube located at({@code x}, {@code y}, {@code z}).
     * The vertices must be rendered with GL_TRIANGLE_STRIP.
     *
     * @param x the x-coordinate
@@ -323,7 +323,7 @@ final class GameRenderer @throws[LWJGLException]()
             yy <- 0 until Chunk.height
             zz <- 0 until -Chunk.depth by -1
           } yield {
-            if (data(xx)(yy)(-zz) !=0 ) {
+            if (data(xx)(yy)(-zz) != 0 ) {
               vertexData.put(cubeData(
                 chunk.xx * Chunk.width + xx, yy, chunk.zz * Chunk.depth + zz
               ))
@@ -346,8 +346,8 @@ final class GameRenderer @throws[LWJGLException]()
       } catch {
         case boe2: BufferOverflowException =>
           // Bail out
-          println ("Oops! BlockSmith has crashed!")
-          BlockSmith.LOGGER.log (Level.SEVERE, boe2.toString, boe2)
+          println("Oops! BlockSmith has crashed!")
+          BlockSmith.LOGGER.log(Level.SEVERE, boe2.toString, boe2)
           System.exit(1)
           BufferUtils.createIntBuffer(0) // Never reached
       }

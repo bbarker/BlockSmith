@@ -94,12 +94,12 @@ final class GameState() {
       newBlock <- newBlockOpt
     } {
       if (input.breakBlock) {
-        chunk.setBlockType(selectedBlock, 0.toByte)
+        chunk.setBlockType(selectedBlock, 0)
         // Notify the listener
         listener.gameStateChunkChanged(chunk)
       }
       else if (input.placeBlock) {
-        chunk.setBlockType(newBlock, 1.toByte)
+        chunk.setBlockType(newBlock, 1)
         // Notify the listener
         listener.gameStateChunkChanged(chunk)
       }
