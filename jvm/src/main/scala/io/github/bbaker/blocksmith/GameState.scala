@@ -5,8 +5,6 @@ package io.github.bbaker.blocksmith
 import Coordinates._
 import Vector.vecProjToBlockProj1D
 
-import scala.util.control.Breaks._
-
 /**
   * GameState is the model in the Model-View-Controller (MVC) design architecture
   * for this application. GameState is responsible for simulating the Mycraft world.
@@ -164,50 +162,41 @@ final class GameState() {
           case VectorZ => (dSq: Float) => {frontBackDistSquared = dSq}
         }
 
-        breakable {
-          println(s"before while: rayInit: ${rayInit.x}, ${rayInit.y}, ${rayInit.z}")
-          // step to increment ray by
-          lazy val rays: Stream[Vector] = rayInit #:: rays.map(_ + step)
-          (for (ray <- rays.takeWhile(!rayDistMaxReached(_))
-               if selectedBlockOpt.isEmpty && ray.x >= 0 && ray.x < 16 &&
-                 ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16)
-          yield {
-            //ray.sub(step) // FIXME: this is a hack fix
-            println(s"ray ${ray.x}, ${ray.y}, ${ray.z}")
-            if (pj(sight) > 0) {
-              if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
-                val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
-                selectedBlockOpt = Some(selectedBlock)
-                if (pj(selectedBlock) - 1 >= 0) {
-                  println(s"selected new block E in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                  val newBlock = Block(selectedBlock.x - xInd, selectedBlock.y - yInd, selectedBlock.z - zInd)
-                  newBlockOpt = Some(newBlock)
-                  if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
-                }
-                updateDistSq(distSquared(ray))
-                println("break test 2")
-                //break  //todo: remove break
+        // step to increment ray by
+        lazy val rays: Stream[Vector] = rayInit #:: rays.map(_ + step)
+        (for (ray <- rays.takeWhile(!rayDistMaxReached(_))
+             if ray.x >= 0 && ray.x < 16 &&
+               ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16)
+        yield {
+          println(s"ray ${ray.x}, ${ray.y}, ${ray.z}")
+          if (pj(sight) > 0) {
+            if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
+              val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
+              selectedBlockOpt = Some(selectedBlock)
+              if (pj(selectedBlock) - 1 >= 0) {
+                println(s"selected new block E in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
+                val newBlock = Block(selectedBlock.x - xInd, selectedBlock.y - yInd, selectedBlock.z - zInd)
+                newBlockOpt = Some(newBlock)
+                if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
               }
+              updateDistSq(distSquared(ray))
             }
-            else {
-              if (pj(ray) - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int] - xInd, ray.y.asInstanceOf[Int] - yInd, ray.z.asInstanceOf[Int] - zInd)) != 0) {
-                val selectedBlock = Block(ray.x.asInstanceOf[Int] - xInd, ray.y.asInstanceOf[Int] - yInd, ray.z.asInstanceOf[Int] - zInd)
-                selectedBlockOpt = Some(selectedBlock)
-                if (pj(selectedBlock) + 1 < 16) {
-                  println(s"selected new block F in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
-                  val newBlock = Block(selectedBlock.x + xInd, selectedBlock.y + yInd, selectedBlock.z + zInd)
-                  newBlockOpt = Some(newBlock)
-                  if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
-                }
-                updateDistSq(distSquared(ray))
-                println("break test 3")
-                //break  //todo: remove break
+          }
+          else {
+            if (pj(ray) - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int] - xInd, ray.y.asInstanceOf[Int] - yInd, ray.z.asInstanceOf[Int] - zInd)) != 0) {
+              val selectedBlock = Block(ray.x.asInstanceOf[Int] - xInd, ray.y.asInstanceOf[Int] - yInd, ray.z.asInstanceOf[Int] - zInd)
+              selectedBlockOpt = Some(selectedBlock)
+              if (pj(selectedBlock) + 1 < 16) {
+                println(s"selected new block F in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
+                val newBlock = Block(selectedBlock.x + xInd, selectedBlock.y + yInd, selectedBlock.z + zInd)
+                newBlockOpt = Some(newBlock)
+                if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
               }
+              updateDistSq(distSquared(ray))
             }
-          }).toList
-          println("end for")
+          }
+        }).toList
 
-        }
       }
     }
 
