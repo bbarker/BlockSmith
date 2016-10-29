@@ -318,6 +318,7 @@ final class GameRenderer @throws[LWJGLException]()
           val vertexData: IntBuffer = vboStore.getOrElse(vboId,
             BufferUtils.createIntBuffer(bufSize)
           )
+          vertexData.limit(bufSize)
           for {
             xx <- 0 until Chunk.width
             yy <- 0 until Chunk.height
@@ -329,6 +330,7 @@ final class GameRenderer @throws[LWJGLException]()
               ))
             }
           }
+          renderedChunkMap(chunkId) = vboId
           vboStore(vboId) = vertexData
           vboPosition(vboId) = vertexData.position / 5
           vertexData
@@ -341,15 +343,17 @@ final class GameRenderer @throws[LWJGLException]()
     val vertexData: IntBuffer = try {
       putCubeData(70000)
     } catch {
-      case boe1: BufferOverflowException => try {
-        putCubeData(150000)
-      } catch {
-        case boe2: BufferOverflowException =>
-          // Bail out
-          println("Oops! BlockSmith has crashed!")
-          BlockSmith.LOGGER.log(Level.SEVERE, boe2.toString, boe2)
-          System.exit(1)
-          BufferUtils.createIntBuffer(0) // Never reached
+      case boe1: BufferOverflowException =>
+        try {
+          println("Nonfatal BufferOverflowException, trying larger allocation!")
+          putCubeData(150000)
+        } catch {
+          case boe2: BufferOverflowException =>
+            // Bail out
+            println("Oops! BlockSmith has crashed!")
+            BlockSmith.LOGGER.log(Level.SEVERE, boe2.toString, boe2)
+            System.exit(1)
+            BufferUtils.createIntBuffer(0) // Never reached
       }
     }
     vertexData.flip
