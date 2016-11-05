@@ -83,6 +83,7 @@ final class GameState() {
     val multiplier: Float = deltaTime / (100.0f / 6.0f)
     // Player movement
     player.move(input, multiplier)
+    println(s"player coords: ${player.coords2d.xx}, ${player.coords2d.zz}")
     val chunk = world.chunk(player.coords2d)
     player.collision(chunk)
     if (input.jump) player.jump()
