@@ -164,16 +164,14 @@ final class GameState() {
 
         // step to increment ray by
         lazy val rays: Stream[Vector] = rayInit #:: rays.map(_ + step)
-        (for (ray <- rays.takeWhile(!rayDistMaxReached(_))
-             if ray.x >= 0 && ray.x < 16 &&
-               ray.y >= 0 && ray.y < 16 && ray.z >= 0 && ray.z < 16)
+        (for (ray <- rays.takeWhile(!rayDistMaxReached(_)))
         yield {
           if (pj(sight) > 0) {
             if (chunk.getBlockType(Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])) != 0) {
               val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
               selectedBlockOpt = Some(selectedBlock)
               if (pj(selectedBlock) - 1 >= 0) {
-                println(s"selected new block E in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
+                //println(s"selected new block E in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
                 val newBlock = Block(selectedBlock.x - xInd, selectedBlock.y - yInd, selectedBlock.z - zInd)
                 newBlockOpt = Some(newBlock)
                 if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
@@ -186,7 +184,7 @@ final class GameState() {
               val selectedBlock = Block(ray.x.asInstanceOf[Int] - xInd, ray.y.asInstanceOf[Int] - yInd, ray.z.asInstanceOf[Int] - zInd)
               selectedBlockOpt = Some(selectedBlock)
               if (pj(selectedBlock) + 1 < 16) {
-                println(s"selected new block F in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
+                //println(s"selected new block F in chunk ${chunk.xx}, ${chunk.zz}") // DEBUG
                 val newBlock = Block(selectedBlock.x + xInd, selectedBlock.y + yInd, selectedBlock.z + zInd)
                 newBlockOpt = Some(newBlock)
                 if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
