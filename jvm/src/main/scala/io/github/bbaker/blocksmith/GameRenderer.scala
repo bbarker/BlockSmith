@@ -36,6 +36,11 @@ import io.github.bbaker.blocksmith.GameRenderer._
 final class GameRenderer @throws[LWJGLException]()
 (implicit val gameState: GameState) extends GameStateListener {
 
+  // block offsets for current chunk
+  private var cx = 0
+  private var cy = 0
+  private var cz = 0
+
   // Vertex Data interleaved format: XYZST
   private val position: Int = 3
   private val texcoords: Int = 2
@@ -179,24 +184,24 @@ final class GameRenderer @throws[LWJGLException]()
       val selectedBlock: Vector = GameRenderer.openGLCoordinatesForBlock (state.getSelectedBlock)
       // Just use immediate mode/fixed function pipeline
       glBegin(GL_LINE_STRIP)
-      glVertex3f(selectedBlock.x, selectedBlock.y, selectedBlock.z)
-      glVertex3f(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
-      glVertex3f(selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z)
-      glVertex3f(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
-      glVertex3f(selectedBlock.x, selectedBlock.y, selectedBlock.z)
-      glVertex3f(selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
-      glVertex3f(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z - 1)
-      glVertex3f(selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z - 1)
-      glVertex3f(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z - 1)
-      glVertex3f(selectedBlock.x, selectedBlock.y, selectedBlock.z - 1)
+      glVertex3f(cx + selectedBlock.x, selectedBlock.y, cz + selectedBlock.z)
+      glVertex3f(cx + selectedBlock.x + 1, selectedBlock.y, cz + selectedBlock.z)
+      glVertex3f(cx + selectedBlock.x + 1, selectedBlock.y + 1, cz + selectedBlock.z)
+      glVertex3f(cx + selectedBlock.x, selectedBlock.y + 1, cz + selectedBlock.z)
+      glVertex3f(cx + selectedBlock.x, selectedBlock.y, cz + selectedBlock.z)
+      glVertex3f(cx + selectedBlock.x, selectedBlock.y, cz + selectedBlock.z - 1)
+      glVertex3f(cx + selectedBlock.x + 1, selectedBlock.y, cz + selectedBlock.z - 1)
+      glVertex3f(cx + selectedBlock.x + 1, selectedBlock.y + 1, cz + selectedBlock.z - 1)
+      glVertex3f(cx + selectedBlock.x, selectedBlock.y + 1, cz + selectedBlock.z - 1)
+      glVertex3f(cx + selectedBlock.x, selectedBlock.y, cz + selectedBlock.z - 1)
       glEnd()
       glBegin(GL_LINES)
-      glVertex3f(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z)
-      glVertex3f(selectedBlock.x, selectedBlock.y + 1, selectedBlock.z - 1)
-      glVertex3f(selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z)
-      glVertex3f(selectedBlock.x + 1, selectedBlock.y + 1, selectedBlock.z - 1)
-      glVertex3f(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z)
-      glVertex3f(selectedBlock.x + 1, selectedBlock.y, selectedBlock.z - 1)
+      glVertex3f(cx + selectedBlock.x, selectedBlock.y + 1, cz + selectedBlock.z)
+      glVertex3f(cx + selectedBlock.x, selectedBlock.y + 1, cz + selectedBlock.z - 1)
+      glVertex3f(cx + selectedBlock.x + 1, selectedBlock.y + 1, cz + selectedBlock.z)
+      glVertex3f(cx + selectedBlock.x + 1, selectedBlock.y + 1, cz + selectedBlock.z - 1)
+      glVertex3f(cx + selectedBlock.x + 1, selectedBlock.y, cz + selectedBlock.z)
+      glVertex3f(cx + selectedBlock.x + 1, selectedBlock.y, cz + selectedBlock.z - 1)
       glEnd()
     }
     // Reload identity matrix
@@ -310,10 +315,14 @@ final class GameRenderer @throws[LWJGLException]()
     */
   override def gameStateChunkChanged(chunk: Chunk) = {
     val data: Array[Array[Array[Byte]]] = chunk.getData
+    cx = chunk.xx * Chunk.width
+    cz = chunk.zz * Chunk.depth
+    //TODO cy
 
     def putCubeData(bufSize: Int): IntBuffer = {
       gameState.world.chunkId(chunk.region2d) match {
         case Some(chunkId) =>
+          println(s"Rendering chunk: $chunkId")
           val vboId: Int = renderedChunkMap.getOrElse(chunkId, createVbo())
           val vertexData: IntBuffer = vboStore.getOrElse(vboId,
             BufferUtils.createIntBuffer(bufSize)
