@@ -8,6 +8,7 @@ import java.util.logging.Level
 
 import scala.collection.mutable
 
+
 import org.lwjgl.opengl.GL11._
 import org.lwjgl.opengl._
 import org.lwjgl.util.glu.GLU._
@@ -36,6 +37,11 @@ import io.github.bbaker.blocksmith.GameRenderer._
 final class GameRenderer @throws[LWJGLException]()
 (implicit val gameState: GameState) extends GameStateListener {
 
+  // block offsets for current chunk
+  private var cx = 0
+  private var cy = 0
+  private var cz = 0
+
   // Vertex Data interleaved format: XYZST
   private val position: Int = 3
   private val texcoords: Int = 2
@@ -45,7 +51,7 @@ final class GameRenderer @throws[LWJGLException]()
   /**
     * The furthest away from this Camera that objects will be rendered.
     */
-  private val renderDistance: Float = 50
+  private val renderDistance: Float = 150
 
   /**
     * A simple 16 by 16 dirt texture.
@@ -176,7 +182,8 @@ final class GameRenderer @throws[LWJGLException]()
     glColor3b(-127, -127, -127)
     // Draw selected block outline highlight
     if (state.isBlockSelected) {
-      val selectedBlock: Vector = GameRenderer.openGLCoordinatesForBlock (state.getSelectedBlock)
+      val sbIn = state.getSelectedBlock
+      val selectedBlock: Vector = openGLCoordinatesForBlock(state.getSelectedBlock)
       // Just use immediate mode/fixed function pipeline
       glBegin(GL_LINE_STRIP)
       glVertex3f(selectedBlock.x, selectedBlock.y, selectedBlock.z)
@@ -250,6 +257,7 @@ final class GameRenderer @throws[LWJGLException]()
     glTexCoordPointer(2, GL_INT, vertexDataSize, position * sizeOfInt)
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_TEXTURE_COORD_ARRAY)
+    println(s"Creating VBO: $bufferObjectID")
     bufferObjectID
   }
 
@@ -309,11 +317,17 @@ final class GameRenderer @throws[LWJGLException]()
     * @param chunk the chunk that has changed
     */
   override def gameStateChunkChanged(chunk: Chunk) = {
+    println("gameStateChunkChanged")
     val data: Array[Array[Array[Byte]]] = chunk.getData
+    cx = chunk.xx * Chunk.width
+    cz = chunk.zz * Chunk.depth
+    //TODO cy
 
     def putCubeData(bufSize: Int): IntBuffer = {
+      println(s"putCubeData($bufSize)")
       gameState.world.chunkId(chunk.region2d) match {
         case Some(chunkId) =>
+          println(s"Rendering chunk: $chunkId")
           val vboId: Int = renderedChunkMap.getOrElse(chunkId, createVbo())
           val vertexData: IntBuffer = vboStore.getOrElse(vboId,
             BufferUtils.createIntBuffer(bufSize)
@@ -364,6 +378,16 @@ final class GameRenderer @throws[LWJGLException]()
     )
   }
 
+  /**
+    * Gets the vertices to use for rendering a block (inverts the z axis).
+    *
+    * @param block the block's location
+    * @return its rendering coordinates
+    */
+  def openGLCoordinatesForBlock(block: Block): Vector =
+    Vector(cx + block.x, block.y, -(cz + block.z))
+
+
 }
 
 object GameRenderer {
@@ -377,12 +401,4 @@ object GameRenderer {
     */
   private val CROSSHAIR_SIZE: Float = 0.025f
 
-  /**
-    * Gets the vertices to use for rendering a block (inverts the z axis).
-    *
-    * @param block the block's location
-    * @return its rendering coordinates
-    */
-  def openGLCoordinatesForBlock(block: Block): Vector =
-    Vector(block.x, block.y, -block.z)
 }

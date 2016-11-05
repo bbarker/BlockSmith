@@ -8,8 +8,10 @@ package io.github.bbaker.blocksmith
 
 object Coordinates {
 
-  implicit def coords2dToRegion2d(coords: Coords2d): Region2d =
-    Region2d(coords.xx / Chunk.width, coords.zz / Chunk.depth)
+  implicit def coords2dToRegion2d(coords: Coords2d): Region2d = Region2d(
+    coords.xx / Chunk.width - (if (coords.xx < 0) 1 else 0),
+    coords.zz / Chunk.depth - (if (coords.zz < 0) 1 else 0)
+  )
 
   case class Coords2d(xx: Int, zz: Int)
 

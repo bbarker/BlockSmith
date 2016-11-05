@@ -2,10 +2,11 @@ import LWJGLPlugin._
 
 name := "BlockSmith"
 
-scalaVersion in ThisBuild := "2.11.8"
+scalaVersion in ThisBuild := "2.12.1"
 
 val slickVersion = "1.0.2"
 val lwjglVersion = "2.9.3"
+val reactorsVersion = "0.8"
 
 // Seems to be missing
 //Seq(slickSettings: _*)
@@ -36,19 +37,19 @@ lazy val BlockSmith = crossProject.in(file(".")).
         "https://oss.sonatype.org/content/repositories/releases"
     ),
     libraryDependencies ++= Seq(
-      "org.specs2" %% "specs2-core" % "3.8.5" % "it,test"
+      "org.specs2" %% "specs2-core" % "3.8.9" % "it,test"
     )
 
   ).
   jvmSettings(
     // Add JVM-specific settings here
       libraryDependencies ++= Seq(
-      "org.slick2d" % "slick2d-core" % slickVersion,
-//      "org.lwjgl.lwjgl" % "lwjgl" % lwjglVersion,
-//      "org.lwjgl.lwjgl" % "lwjgl-platform" % lwjglVersion,
-        "org.lwjgl.lwjgl" % "lwjgl_util" % lwjglVersion, //FIXME; shouldn't need
-        "io.reactors" %% "reactors" % "0.8-SNAPSHOT",
-        "com.storm-enroute" %% "macrogl" % "0.4-SNAPSHOT"
+      "org.slick2d" % "slick2d-core" % slickVersion
+//      ,"org.lwjgl.lwjgl" % "lwjgl" % lwjglVersion,
+//      ,"org.lwjgl.lwjgl" % "lwjgl-platform" % lwjglVersion,
+        ,"org.lwjgl.lwjgl" % "lwjgl_util" % lwjglVersion //FIXME; shouldn't need
+        // ,"io.reactors" %% "reactors" % reactorsVersion //TODO: Not used yet
+        // ,"com.storm-enroute" %% "macrogl" % "0.4-SNAPSHOT" //TODO: Not used yet
 )).
   jvmSettings(lwjglSettings: _*).
   jvmConfigure(
@@ -57,8 +58,8 @@ lazy val BlockSmith = crossProject.in(file(".")).
   jsSettings(
     // Add JS-specific settings here
     libraryDependencies ++= Seq(
-      "io.reactors" %%% "reactors" % "0.8-SNAPSHOT"
-      //"com.storm-enroute" %%% "macrogl" % "0.4-SNAPSHOT"  //FIXME, not available
+      // "io.reactors" %%% "reactors" % reactorsVersion //TODO: Not used yet
+      // ,"com.storm-enroute" %%% "macrogl" % "0.4-SNAPSHOT"  //FIXME, not available
     )
   )
 
