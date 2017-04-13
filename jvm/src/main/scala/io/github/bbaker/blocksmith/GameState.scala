@@ -138,9 +138,10 @@ final class GameState() {
 
         // Vector cast out from the players position to find a block
         val rayInit: Vector =
-        if (pj(sight) > 0) position.plus(sight.scaled((Math.ceil(pj(position)) - pj(position)).asInstanceOf[Float] / pj(sight)))
-        else position.plus(sight.scaled((Math.floor(pj(position)) - pj(position)).asInstanceOf[Float] / pj(sight)))
-        if (pj(rayInit) == 16) rayInit.add(step) //TODO: WHY?
+          if (pj(sight) > 0) position.plus(sight.scaled((Math.ceil(pj(position)) - pj(position)).asInstanceOf[Float] / pj(sight)))
+          else position.plus(sight.scaled((Math.floor(pj(position)) - pj(position)).asInstanceOf[Float] / pj(sight)))
+        if (pj(rayInit) % 16 == 0) rayInit.add(step)
+        //TODO: WHY? A: if nothing else, seems to cause texturing issues near some borders, but need to understand better
 
         def distSquared(ray: Vector): Float = ray.minus(position).magnitudeSquared
         def rayDistMaxReached(ray: Vector): Boolean = {
@@ -181,15 +182,24 @@ final class GameState() {
             }
           }
           else {
-            if (pj(ray) - 1 >= 0 && chunk.getBlockType(Block(ray.x.asInstanceOf[Int] - xInd, ray.y.asInstanceOf[Int] - yInd, ray.z.asInstanceOf[Int] - zInd)) != 0) {
-              val selectedBlock = Block(ray.x.asInstanceOf[Int] - xInd, ray.y.asInstanceOf[Int] - yInd, ray.z.asInstanceOf[Int] - zInd)
+            if (pj(ray) - 1 >= 0 &&
+              chunk.getBlockType(Block(
+                ray.x.asInstanceOf[Int] - xInd,
+                ray.y.asInstanceOf[Int] - yInd,
+                ray.z.asInstanceOf[Int] - zInd
+              )) != 0) {
+              val selectedBlock = Block(
+                ray.x.asInstanceOf[Int] - xInd,
+                ray.y.asInstanceOf[Int] - yInd,
+                ray.z.asInstanceOf[Int] - zInd
+              )
               selectedBlockOpt = Some(selectedBlock)
-              if (pj(selectedBlock) + 1 < 16) {
+              //if (pj(selectedBlock) + 1 < 16) {
                 println(s"selected new block F in chunk ${chunk.xx}, ${chunk.zz} (ray)") // DEBUG
                 val newBlock = Block(selectedBlock.x + xInd, selectedBlock.y + yInd, selectedBlock.z + zInd)
                 newBlockOpt = Some(newBlock)
                 if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
-              }
+              //}
               updateDistSq(distSquared(ray))
             }
           }

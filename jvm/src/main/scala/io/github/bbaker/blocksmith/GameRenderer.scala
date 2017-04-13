@@ -50,7 +50,7 @@ final class GameRenderer @throws[LWJGLException]()
   /**
     * The furthest away from this Camera that objects will be rendered.
     */
-  private val renderDistance: Float = 50
+  private val renderDistance: Float = 150
 
   /**
     * A simple 16 by 16 dirt texture.
@@ -182,9 +182,7 @@ final class GameRenderer @throws[LWJGLException]()
     // Draw selected block outline highlight
     if (state.isBlockSelected) {
       val sbIn = state.getSelectedBlock
-      val selectedBlock: Vector = GameRenderer.openGLCoordinatesForBlock(Block(
-        cx + sbIn.x, sbIn.y, cz + sbIn.z
-      ))
+      val selectedBlock: Vector = openGLCoordinatesForBlock(state.getSelectedBlock)
       // Just use immediate mode/fixed function pipeline
       glBegin(GL_LINE_STRIP)
       glVertex3f(selectedBlock.x, selectedBlock.y, selectedBlock.z)
@@ -376,6 +374,15 @@ final class GameRenderer @throws[LWJGLException]()
     )
   }
 
+  /**
+    * Gets the vertices to use for rendering a block (inverts the z axis).
+    *
+    * @param block the block's location
+    * @return its rendering coordinates
+    */
+  def openGLCoordinatesForBlock(block: Block): Vector =
+    Vector(cx + block.x, block.y, -(cz + block.z))
+
 }
 
 object GameRenderer {
@@ -389,12 +396,4 @@ object GameRenderer {
     */
   private val CROSSHAIR_SIZE: Float = 0.025f
 
-  /**
-    * Gets the vertices to use for rendering a block (inverts the z axis).
-    *
-    * @param block the block's location
-    * @return its rendering coordinates
-    */
-  def openGLCoordinatesForBlock(block: Block): Vector =
-    Vector(block.x, block.y, -block.z)
 }
