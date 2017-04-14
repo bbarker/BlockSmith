@@ -8,6 +8,7 @@ import java.util.logging.Level
 
 import scala.collection.mutable
 
+
 import org.lwjgl.opengl.GL11._
 import org.lwjgl.opengl._
 import org.lwjgl.util.glu.GLU._
@@ -380,8 +381,13 @@ final class GameRenderer @throws[LWJGLException]()
     * @param block the block's location
     * @return its rendering coordinates
     */
-  def openGLCoordinatesForBlock(block: Block): Vector =
+  def openGLCoordinatesForBlock(block: Block): Vector = {
+    //FIXME: appear to be getting the wrong block coords from state (at least block.x is off by 1)
+    println(s"chunk coords: ${cx}, ' ', ${cz}")
+    println(s"block coords: ${block.x}, ${block.y}, ${block.z}")
+    println(s"OGL coords: ${cx + block.x}, ${block.y}, ${-(cz + block.z)}")
     Vector(cx + block.x, block.y, -(cz + block.z))
+  }
 
 }
 

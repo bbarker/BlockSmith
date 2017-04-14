@@ -1,6 +1,7 @@
 // Copyright 2012 Mitchell Kember. Subject to the MIT License.
 // Copyright 2012 Mitchell Kember. Subject to the MIT License.
 package io.github.bbaker.blocksmith
+import scala.math.{signum}
 
 import Coordinates._
 import Vector.vecProjToBlockProj1D
@@ -173,7 +174,8 @@ final class GameState() {
               val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
               selectedBlockOpt = Some(selectedBlock)
               if (pj(selectedBlock) - 1 >= 0) {
-                println(s"selected new block E in chunk ${chunk.xx}, ${chunk.zz} (sight)") // DEBUG
+                println(s"selected new block E for pj ${pj.getClass} in chunk ${chunk.xx}, ${chunk.zz} (sight)") // DEBUG
+                println(s"xInd: $xInd")
                 val newBlock = Block(selectedBlock.x - xInd, selectedBlock.y - yInd, selectedBlock.z - zInd)
                 newBlockOpt = Some(newBlock)
                 if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
@@ -182,24 +184,22 @@ final class GameState() {
             }
           }
           else {
+            val tentativeBlock = Block(
+              //FIXME: understand/doc why we need: - (if (chunk.xx < 0) 1 else 0), etc.
+              ray.x.asInstanceOf[Int] - xInd - (if (chunk.xx < 0) 1 else 0),
+              ray.y.asInstanceOf[Int] - yInd,
+              ray.z.asInstanceOf[Int] - zInd - (if (chunk.zz < 0) 1 else 0)
+            )
             if (pj(ray) - 1 >= 0 &&
-              chunk.getBlockType(Block(
-                ray.x.asInstanceOf[Int] - xInd,
-                ray.y.asInstanceOf[Int] - yInd,
-                ray.z.asInstanceOf[Int] - zInd
-              )) != 0) {
-              val selectedBlock = Block(
-                ray.x.asInstanceOf[Int] - xInd,
-                ray.y.asInstanceOf[Int] - yInd,
-                ray.z.asInstanceOf[Int] - zInd
-              )
+              chunk.getBlockType(tentativeBlock) != 0) {
+              val selectedBlock = tentativeBlock
               selectedBlockOpt = Some(selectedBlock)
-              //if (pj(selectedBlock) + 1 < 16) {
-                println(s"selected new block F in chunk ${chunk.xx}, ${chunk.zz} (ray)") // DEBUG
+              if (pj(selectedBlock) + 1 < 16) {
+                println(s"selected new block F for ${pj.getClass} in chunk ${chunk.xx}, ${chunk.zz} (ray)") // DEBUG
                 val newBlock = Block(selectedBlock.x + xInd, selectedBlock.y + yInd, selectedBlock.z + zInd)
                 newBlockOpt = Some(newBlock)
                 if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
-              //}
+              }
               updateDistSq(distSquared(ray))
             }
           }
@@ -207,8 +207,9 @@ final class GameState() {
       }
     }
 
-    // Note that having a selected block does NOT mean we have selected the
-    // correct block and can immediately terminate
+    // TODO: Note that having a selected block does NOT mean we have selected the
+    // correct block and can immediately terminate. However, this implies that we could
+    // rearrange the logic to be efficient and (possibly) simpler to follow
 
     // XY plane (left and right faces); frontBackDistSquared
     if (sight.z != 0) twoFaceCheck(VectorZ)
