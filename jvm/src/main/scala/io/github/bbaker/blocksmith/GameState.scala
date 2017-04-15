@@ -175,7 +175,6 @@ final class GameState() {
               selectedBlockOpt = Some(selectedBlock)
               if (pj(selectedBlock) - 1 >= 0) {
                 println(s"selected new block E for pj ${pj.getClass} in chunk ${chunk.xx}, ${chunk.zz} (sight)") // DEBUG
-                println(s"xInd: $xInd")
                 val newBlock = Block(selectedBlock.x - xInd, selectedBlock.y - yInd, selectedBlock.z - zInd)
                 newBlockOpt = Some(newBlock)
                 if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
