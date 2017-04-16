@@ -111,7 +111,7 @@ class Player {
       ) {
         camera.setPositionZ(Math.ceil(position.z).toInt - 0.5f)
       }
-      println(s"${Math.round(position.z) > position.z} && (${(chunk.getBlockType(Block(Math.round(position.x - 0.25f).toInt, height.toInt, Math.round(position.z))) != 0)}" +
+      println(s"${Math.round(position.z) > position.z} && (${(chunk.getBlockType(Block(Math.round(position.x - 0.25f), height.toInt, Math.round(position.z))) != 0)}" +
       s"|| ${(chunk.getBlockType(Block(Math.round(position.x + 0.25f), height.toInt, Math.round(position.z))) != 0)}" +
       s"|| ${(chunk.getBlockType(Block(Math.round(position.x - 0.25f), (height + 1).toInt, Math.round(position.z))) != 0)}" +
       s"|| ${(chunk.getBlockType(Block(Math.round(position.x + 0.25f).toInt, (height + 1).toInt, Math.round(position.z))) != 0)})"
@@ -127,10 +127,10 @@ class Player {
 
     }
     else {
-      if (Math.round(position.z) < position.z && ((chunk.getBlockType(Block((position.x - 0.25f).toInt, height.toInt, Math.round(position.z) - 1)) != 0)
-        || (chunk.getBlockType(Block((position.x + 0.25f).toInt, height.toInt, Math.round(position.z) - 1)) != 0)
-        || (chunk.getBlockType(Block((position.x - 0.25f).toInt, (height + 1).toInt, Math.round(position.z) - 1)) != 0)
-        || (chunk.getBlockType(Block((position.x + 0.25f).toInt, (height + 1).toInt, Math.round(position.z) - 1)) != 0))
+      if (Math.round(position.z) < position.z && ((chunk.getBlockType(Block(Math.round(position.x - 0.25f), height.toInt, Math.round(position.z) - 1)) != 0)
+        || (chunk.getBlockType(Block(Math.round(position.x + 0.25f), height.toInt, Math.round(position.z) - 1)) != 0)
+        || (chunk.getBlockType(Block(Math.round(position.x - 0.25f), (height + 1).toInt, Math.round(position.z) - 1)) != 0)
+        || (chunk.getBlockType(Block(Math.round(position.x + 0.25f), (height + 1).toInt, Math.round(position.z) - 1)) != 0))
       ) {
         camera.setPositionZ(Math.round(position.z) + 0.5f)
       }
@@ -139,30 +139,30 @@ class Player {
     if (deltaPosition.y <= 0) {
       var drop: Int = height.toInt
       // Cast down a line until it reaches a solid block, which is the ground.
-      while (drop >= 1 && !(( chunk.getBlockType(Block((position.x).toInt, drop - 1, (position.z).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x + 0.25f).toInt, drop - 1, (position.z).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x).toInt, drop - 1, (position.z + 0.25f).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x + 0.25f).toInt, drop - 1, (position.z + 0.25f).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x - 0.25f).toInt, drop - 1, (position.z).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x).toInt, drop - 1, (position.z - 0.25f).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x - 0.25f).toInt, drop - 1, (position.z - 0.25f).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x + 0.25f).toInt, drop - 1, (position.z - 0.25f).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x - 0.25f).toInt, drop - 1, (position.z + 0.25f).toInt)) != 0))) {
+      while (drop >= 1 && !(( chunk.getBlockType(Block(Math.round(position.x), drop - 1, Math.round(position.z))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x + 0.25f), drop - 1, Math.round(position.z))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x), drop - 1, Math.round(position.z + 0.25f))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x + 0.25f), drop - 1, Math.round(position.z + 0.25f))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x - 0.25f), drop - 1, Math.round(position.z))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x), drop - 1, Math.round(position.z - 0.25f))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x - 0.25f), drop - 1, Math.round(position.z - 0.25f))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x + 0.25f), drop - 1, Math.round(position.z - 0.25f))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x - 0.25f), drop - 1, Math.round(position.z + 0.25f))) != 0))) {
         drop -= 1
       }
       ground = drop
     }
     else {
       // Hitting your head when jumping
-      if (((chunk.getBlockType(Block((position.x).toInt, Math.round(position.y), (position.z).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x + 0.25f).toInt, Math.round(position.y), (position.z).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x).toInt, Math.round(position.y), (position.z + 0.25f).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x + 0.25f).toInt, Math.round(position.y), (position.z + 0.25f).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x - 0.25f).toInt, Math.round(position.y), (position.z).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x).toInt, Math.round(position.y), (position.z - 0.25f).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x - 0.25f).toInt, Math.round(position.y), (position.z - 0.25f).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x + 0.25f).toInt, Math.round(position.y), (position.z - 0.25f).toInt)) != 0)
-        || ( chunk.getBlockType(Block((position.x - 0.25f).toInt, Math.round(position.y), (position.z + 0.25f).toInt)) != 0))
+      if (((chunk.getBlockType(Block(Math.round(position.x), Math.round(position.y), Math.round(position.z))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x + 0.25f), Math.round(position.y), Math.round(position.z))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x), Math.round(position.y), Math.round(position.z + 0.25f))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x + 0.25f), Math.round(position.y), Math.round(position.z + 0.25f))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x - 0.25f), Math.round(position.y), Math.round(position.z))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x), Math.round(position.y), Math.round(position.z - 0.25f))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x - 0.25f), Math.round(position.y), Math.round(position.z - 0.25f))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x + 0.25f), Math.round(position.y), Math.round(position.z - 0.25f))) != 0)
+        || ( chunk.getBlockType(Block(Math.round(position.x - 0.25f), Math.round(position.y), Math.round(position.z + 0.25f))) != 0))
       ) {
         // Reposition and stop upward velocity
         height = Math.ceil(position.y).toInt - CAMERA_HEIGHT - 0.5f
