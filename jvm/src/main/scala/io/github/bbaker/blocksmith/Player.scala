@@ -104,21 +104,27 @@ class Player {
     // Forward and backward
     // FIXME: the first two || checks seem to fail for negative chunks
     if (deltaPosition.z > 0) {
-      if ( Math.round(position.z) > position.z && ((chunk.getBlockType(Block((position.x - 0.25f).toInt, height.toInt, Math.round(position.z))) != 0)
-        || (chunk.getBlockType(Block((position.x + 0.25f).toInt, height.toInt, Math.round(position.z))) != 0)
-        || (chunk.getBlockType(Block((position.x - 0.25f).toInt, (height + 1).toInt, Math.round(position.z))) != 0)
-        || (chunk.getBlockType(Block((position.x + 0.25f).toInt, (height + 1).toInt, Math.round(position.z))) != 0))
+      if ( Math.round(position.z) > position.z && ((chunk.getBlockType(Block(Math.round(position.x - 0.25f), height.toInt, Math.round(position.z))) != 0)
+        || (chunk.getBlockType(Block(Math.round(position.x + 0.25f), height.toInt, Math.round(position.z))) != 0)
+        || (chunk.getBlockType(Block(Math.round(position.x - 0.25f), (height + 1).toInt, Math.round(position.z))) != 0)
+        || (chunk.getBlockType(Block(Math.round(position.x + 0.25f), (height + 1).toInt, Math.round(position.z))) != 0))
       ) {
         camera.setPositionZ(Math.ceil(position.z).toInt - 0.5f)
       }
-      println(s"${Math.round(position.z) > position.z} && (${(chunk.getBlockType(Block((position.x - 0.25f).toInt, height.toInt, Math.round(position.z))) != 0)}" +
-      s"|| ${(chunk.getBlockType(Block((position.x + 0.25f).toInt, height.toInt, Math.round(position.z))) != 0)}" +
-      s"|| ${(chunk.getBlockType(Block((position.x - 0.25f).toInt, (height + 1).toInt, Math.round(position.z))) != 0)}" +
-      s"|| ${(chunk.getBlockType(Block((position.x - 0.25f).toInt, (height + 1).toInt, Math.round(position.z))) != 0)}" +
-      s"|| ${(chunk.getBlockType(Block((position.x + 0.25f).toInt, (height + 1).toInt, Math.round(position.z))) != 0)})"
+      println(s"${Math.round(position.z) > position.z} && (${(chunk.getBlockType(Block(Math.round(position.x - 0.25f).toInt, height.toInt, Math.round(position.z))) != 0)}" +
+      s"|| ${(chunk.getBlockType(Block(Math.round(position.x + 0.25f), height.toInt, Math.round(position.z))) != 0)}" +
+      s"|| ${(chunk.getBlockType(Block(Math.round(position.x - 0.25f), (height + 1).toInt, Math.round(position.z))) != 0)}" +
+      s"|| ${(chunk.getBlockType(Block(Math.round(position.x + 0.25f).toInt, (height + 1).toInt, Math.round(position.z))) != 0)})"
       )
-      val debugBlock = Block((position.x - 0.25f).toInt, height.toInt, Math.round(position.z))
-      println(s"debug block: ${debugBlock.x}, ${debugBlock.y}, ${debugBlock.z}")
+      val debugBlock1 = Block(Math.round(position.x - 0.25f), height.toInt, Math.round(position.z))
+      val debugBlock2 = Block(Math.round(position.x + 0.25f), height.toInt, Math.round(position.z))
+      val debugBlock3 = Block(Math.round(position.x - 0.25f), (height + 1).toInt, Math.round(position.z))
+      val debugBlock4 = Block(Math.round(position.x + 0.25f), (height + 1).toInt, Math.round(position.z))
+      println(s"debug block: ${debugBlock1.x}, ${debugBlock1.y}, ${debugBlock1.z} with posn.x = ${position.x}, posn.z = ${position.z}")
+      println(s"debug block: ${debugBlock2.x}, ${debugBlock2.y}, ${debugBlock2.z} with posn.x = ${position.x}, posn.z = ${position.z}")
+      println(s"debug block: ${debugBlock3.x}, ${debugBlock3.y}, ${debugBlock3.z} with posn.x = ${position.x}, posn.z = ${position.z}")
+      println(s"debug block: ${debugBlock4.x}, ${debugBlock4.y}, ${debugBlock4.z} with posn.x = ${position.x}, posn.z = ${position.z}")
+
     }
     else {
       if (Math.round(position.z) < position.z && ((chunk.getBlockType(Block((position.x - 0.25f).toInt, height.toInt, Math.round(position.z) - 1)) != 0)

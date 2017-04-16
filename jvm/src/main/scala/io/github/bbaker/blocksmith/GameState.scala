@@ -84,7 +84,7 @@ final class GameState() {
     val multiplier: Float = deltaTime / (100.0f / 6.0f)
     // Player movement
     player.move(input, multiplier)
-    println(s"player coords: ${player.coords2d.xx}, ${player.coords2d.zz}")
+    // println(s"player coords: ${player.coords2d.xx}, ${player.coords2d.zz}") // DEBUG
     val chunk = world.chunk(player.coords2d)
     player.collision(chunk)
     if (input.jump) player.jump()
@@ -102,6 +102,7 @@ final class GameState() {
       }
       else if (input.placeBlock) {
         chunk.setBlockType(newBlock, 1)
+        println(s"placing block at ${newBlock.x}, ${newBlock.y}, ${newBlock.z} in chunk ${chunk.xx}, ${chunk.zz} (sight)") // DEBUG
         // Notify the listener
         listener.gameStateChunkChanged(chunk)
       }
@@ -174,7 +175,7 @@ final class GameState() {
               val selectedBlock = Block(ray.x.asInstanceOf[Int], ray.y.asInstanceOf[Int], ray.z.asInstanceOf[Int])
               selectedBlockOpt = Some(selectedBlock)
               if (pj(selectedBlock) - 1 >= 0) {
-                println(s"selected new block E for pj ${pj.getClass} in chunk ${chunk.xx}, ${chunk.zz} (sight)") // DEBUG
+                //println(s"selected new block E for pj ${pj.getClass} in chunk ${chunk.xx}, ${chunk.zz} (sight)") // DEBUG
                 val newBlock = Block(selectedBlock.x - xInd, selectedBlock.y - yInd, selectedBlock.z - zInd)
                 newBlockOpt = Some(newBlock)
                 if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
@@ -194,7 +195,7 @@ final class GameState() {
               val selectedBlock = tentativeBlock
               selectedBlockOpt = Some(selectedBlock)
               if (pj(selectedBlock) + 1 < 16) {
-                println(s"selected new block F for ${pj.getClass} in chunk ${chunk.xx}, ${chunk.zz} (ray)") // DEBUG
+                //println(s"selected new block F for ${pj.getClass} in chunk ${chunk.xx}, ${chunk.zz} (ray)") // DEBUG
                 val newBlock = Block(selectedBlock.x + xInd, selectedBlock.y + yInd, selectedBlock.z + zInd)
                 newBlockOpt = Some(newBlock)
                 if (chunk.getBlockType(newBlock) != 0) newBlockOpt = None
