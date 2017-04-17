@@ -97,6 +97,7 @@ final class GameState() {
     } {
       if (input.breakBlock) {
         chunk.setBlockType(selectedBlock, 0)
+        println(s"removing block at ${selectedBlock.x}, ${selectedBlock.y}, ${selectedBlock.z} in chunk ${chunk.xx}, ${chunk.zz} (sight)") // DEBUG
         // Notify the listener
         listener.gameStateChunkChanged(chunk)
       }

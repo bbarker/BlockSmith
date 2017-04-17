@@ -257,6 +257,7 @@ final class GameRenderer @throws[LWJGLException]()
     glTexCoordPointer(2, GL_INT, vertexDataSize, position * sizeOfInt)
     glEnableClientState(GL_VERTEX_ARRAY)
     glEnableClientState(GL_TEXTURE_COORD_ARRAY)
+    println(s"Creating VBO: $bufferObjectID")
     bufferObjectID
   }
 
@@ -316,12 +317,14 @@ final class GameRenderer @throws[LWJGLException]()
     * @param chunk the chunk that has changed
     */
   override def gameStateChunkChanged(chunk: Chunk) = {
+    println("gameStateChunkChanged")
     val data: Array[Array[Array[Byte]]] = chunk.getData
     cx = chunk.xx * Chunk.width
     cz = chunk.zz * Chunk.depth
     //TODO cy
 
     def putCubeData(bufSize: Int): IntBuffer = {
+      println(s"putCubeData($bufSize)")
       gameState.world.chunkId(chunk.region2d) match {
         case Some(chunkId) =>
           println(s"Rendering chunk: $chunkId")
