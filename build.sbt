@@ -1,68 +1,66 @@
-import LWJGLPlugin._
+import scala.collection.immutable.Seq
 
 name := "BlockSmith"
 
-scalaVersion in ThisBuild := "2.12.1"
+scalaVersion in ThisBuild := "2.13.5"
 
-val slickVersion = "1.0.2"
-val lwjglVersion = "2.9.3"
-val reactorsVersion = "0.8"
+// lazy val slickVersion = "1.0.2"
+lazy val zioVersion   = "1.0.4"
+lazy val lwjglVersion = "3.2.3"
+lazy val reactorsVersion = "0.8"
+
+
+lazy val os = Option(System.getProperty("os.name", ""))
+  .map(_.substring(0, 3).toLowerCase) match {
+  case Some("win") => "windows"
+  case Some("mac") => "macos"
+  case _           => "linux"
+}
 
 // Seems to be missing
 //Seq(slickSettings: _*)
 
+resolvers += Resolver.sonatypeRepo("snapshots")
 
-lazy val root = project.in(file(".")).
-  aggregate(BlockSmithJS, BlockSmithJVM).settings(
-    publish := {},
-    publishLocal := {}
-  )
+libraryDependencies ++= Seq(
+  "dev.zio"   %% "zio"         % zioVersion,
+  "dev.zio"   %% "zio-streams" % zioVersion,
+  "org.lwjgl" % "lwjgl"        % lwjglVersion,
+  "org.lwjgl" % "lwjgl-opengl" % lwjglVersion,
+  "org.lwjgl" % "lwjgl-glfw"   % lwjglVersion,
+  "org.lwjgl" % "lwjgl-stb"    % lwjglVersion,
+  "org.lwjgl" % "lwjgl-assimp" % lwjglVersion,
+  "org.lwjgl" % "lwjgl-nanovg" % lwjglVersion,
+  "org.lwjgl" % "lwjgl"        % lwjglVersion classifier s"natives-$os",
+  "org.lwjgl" % "lwjgl-opengl" % lwjglVersion classifier s"natives-$os",
+  "org.lwjgl" % "lwjgl-glfw"   % lwjglVersion classifier s"natives-$os",
+  "org.lwjgl" % "lwjgl-stb"    % lwjglVersion classifier s"natives-$os",
+  "org.lwjgl" % "lwjgl-assimp" % lwjglVersion classifier s"natives-$os",
+  "org.lwjgl" % "lwjgl-nanovg" % lwjglVersion classifier s"natives-$os"
+)
 
-// Do `project BlockSmithJVM` in sbt to switch to JVM, then do `run`
-mainClass in (Compile,run) := Some("io.github.bbaker.blocksmith.BlockSmith")
+scalacOptions ++= Seq(
+  "-deprecation",
+  "-encoding", "UTF-8",
+  "-feature",
+  "-language:existentials",
+  "-language:higherKinds",
+  "-language:implicitConversions",
+  "-unchecked",
+  "-Xfatal-warnings",
+  "-Xlint:_,-missing-interpolator",
+  "-Ywarn-dead-code",
+  "-Ywarn-numeric-widen",
+  "-Ywarn-value-discard",
+  "-Yrangepos",
+  "-target:jvm-1.8"
+)
 
-lazy val BlockSmith = crossProject.in(file(".")).
-  configs(IntegrationTest).
-  settings(Defaults.itSettings: _*).
-  settings(
-    wartremoverWarnings ++= Warts.unsafe,
-    wartremoverErrors ++= Seq(Wart.Return),
-    name := "BlockSmith cross project",
-    description := "BlockSmith is currently an experiment in the ways of MineCraft.",
-    version := "0.1.0-SNAPSHOT",
-    resolvers ++= Seq(
-      "Sonatype OSS Snapshots" at
-        "https://oss.sonatype.org/content/repositories/snapshots",
-      "Sonatype OSS Releases" at
-        "https://oss.sonatype.org/content/repositories/releases"
-    ),
-    libraryDependencies ++= Seq(
-      "org.specs2" %% "specs2-core" % "3.8.9" % "it,test"
-    )
+javaOptions ++= {
+  if (os == "macos")
+    Seq("-XstartOnFirstThread")
+  else
+    Nil
+}
 
-  ).
-  jvmSettings(
-    // Add JVM-specific settings here
-      libraryDependencies ++= Seq(
-      "org.slick2d" % "slick2d-core" % slickVersion
-//      ,"org.lwjgl.lwjgl" % "lwjgl" % lwjglVersion,
-//      ,"org.lwjgl.lwjgl" % "lwjgl-platform" % lwjglVersion,
-        ,"org.lwjgl.lwjgl" % "lwjgl_util" % lwjglVersion //FIXME; shouldn't need
-        // ,"io.reactors" %% "reactors" % reactorsVersion //TODO: Not used yet
-        // ,"com.storm-enroute" %% "macrogl" % "0.4-SNAPSHOT" //TODO: Not used yet
-)).
-  jvmSettings(lwjglSettings: _*).
-  jvmConfigure(
-    _.enablePlugins(LWJGLPlugin)
-  ).
-  jsSettings(
-    // Add JS-specific settings here
-    libraryDependencies ++= Seq(
-      // "io.reactors" %%% "reactors" % reactorsVersion //TODO: Not used yet
-      // ,"com.storm-enroute" %%% "macrogl" % "0.4-SNAPSHOT"  //FIXME, not available
-    )
-  )
-
-lazy val BlockSmithJVM = BlockSmith.jvm
-lazy val BlockSmithJS = BlockSmith.js
-
+fork in run := true
