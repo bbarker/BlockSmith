@@ -5,8 +5,6 @@ package io.github.bbaker.blocksmith
 import java.io.IOException
 import java.util.logging.{FileHandler, Level, Logger}
 
-import org.lwjgl.LWJGLException
-
 /**
   * BlockSmith is an open source java game that uses the LightWeight Java
   * Game Library (LWJGL).
@@ -40,7 +38,7 @@ object BlockSmith {
       controller.run() // begin the main loop
     }
     catch {
-      case lwjgle: LWJGLException =>
+      case lwjgle: RuntimeException =>
         LOGGER.log(Level.SEVERE, lwjgle.toString, lwjgle)
     } finally {
       if (controller != null) {
